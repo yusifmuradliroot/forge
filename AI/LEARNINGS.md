@@ -27,6 +27,11 @@
   determinism, adversarial probes, 68KB byte-exact, checker PASS.
 - Residual risk (untestable here): devtools-open path, mobile Firefox + Violentmonkey.
 
+## 2026-09-05 — release checklist gap
+- README went stale during the v2 rush (missing --dev, FS:2, version note) and the user
+  caught it. Lesson: every version bump MUST include README + CHANGELOG + WHEREWEARE
+  in the same commit. Docs are part of "done".
+
 ## Working with this user
 - Approves fast ("ekle", "yaz", "evet", "devam") — execute immediately.
 - Strategic calls stay with user; max 2-3 options, recommend one.
