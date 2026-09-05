@@ -17,7 +17,8 @@ Open-source release possible later.
 
 ## Next
 - v1 (LOCKED scope): `strip` → `short` → `crypt`. This alone beats most attackers.
-- v2 (later): `pack` (whole-file or segmented IR) + wire into abyss → grimorium export
+- Then forgescript track in locked build order: format sketch → runner → finalize format → translator.
+- v2 (later): `pack` + wire into abyss → grimorium export
 
 ## Open problems
 - (none — rebuild)

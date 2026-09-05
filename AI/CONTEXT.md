@@ -17,6 +17,14 @@ VERSION               → single version for the whole tool
 v1: strip → short → crypt. Clean first, rename second, encrypt third
 (encrypted blobs must not be renamed). `pack` deferred to v2.
 
+## Build order (locked)
+1. `.fs` format sketch (skeleton target for the runner — half page, not full spec)
+2. forgescript runner (minimal, fast, secure; light anti-debug embedded;
+   environment-agnostic core, pluggable host API for browser/Violentmonkey/node)
+3. Finalize `.fs` format against the runner
+4. forge translator (raw JS → `.fs`)
+Runner core MUST stay DOM-free. Full-tamper anti-debug is out (cat-and-mouse).
+
 ## Architecture constraint
 A layer OVER JavaScript: output runs anywhere JS runs, no installs, no native builds.
 
