@@ -6,8 +6,9 @@ First client: Gartic.io Omni pipeline (abyss → grimorium). Must stay usable be
 
 ## Done
 - Private repo `forge` created, branch `main`.
-- Skeleton: `src/passes/`, `tools/forge.py` CLI, `tests/`, `docs/` (pending), README, VERSION `0.1.0`.
-- First pass works: `strip_comments` (string-aware, fixture-verified).
+- v0.2.0: 4 passes (strip_comments, mangle, string_crypt, ai_confuse), full chain verified on
+  real 68KB file (node --check OK, runtime output identical).
+- Full docs: DESIGN, TUTORIAL, CLI, FAQ, PASSES catalog. checker PASS (4 passes, 3 fixtures).
 - AI infra: AGENTS.md + AI/{RULES,WHEREWEARE,CONTEXT,LEARNINGS}.
 - Infra: topics, CHANGELOG, docs/PASSES.md, tools/check.py (PASS).
 
