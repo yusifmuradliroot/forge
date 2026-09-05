@@ -19,3 +19,10 @@ v1: strip → short → crypt. Clean first, rename second, encrypt third
 
 ## Architecture constraint
 A layer OVER JavaScript: output runs anywhere JS runs, no installs, no native builds.
+
+## Distribution design (ForgeScript)
+- Plugins ship as `.fs` files (written in ForgeScript) on GitHub.
+- The ForgeScript runner is EMBEDDED in orbit: voyager → orbit → embedded ForgeScript.
+- Orbit fetches `.fs`, routes to the runner, runner executes. No plaintext plugin code on disk.
+- Runner and `.fs` language MUST be versioned together (compat matrix: runner vX runs `.fs` vY).
+  Language changes require runner + files in lockstep — never bump one side alone.
