@@ -6,9 +6,9 @@ never changes runtime behavior.
 | Pass | Status | Target | Notes |
 |---|---|---|---|
 | `strip_comments` | done | all | string-aware (`' " \``), fixture `tests/basic.js` |
-| `mangle` | planned | casual readers | scope-aware identifier rename |
-| `string_crypt` | planned | free-AI readers | encrypt strings, runtime decoder stub |
-| `ai_confuse` | planned | paid-AI + tools | dead code, misleading comments, fake notes |
+| `mangle` | done | casual readers | single-declaration locals only; shadow/property/key/regex/template safe; fixture `tests/mangle.js` |
+| `string_crypt` | done | free-AI readers | `__f` XOR-hex stub; skips short/`__*`/directives/object keys/templates; fixture `tests/string_crypt.js`, node-verified |
+| `ai_confuse` | done | paid-AI + tools | fake banner + 3 collision-checked decoys, append-only |
 | `custom` | planned (last) | pros | proprietary transform, needs private source maps |
 
 ## Adding a pass

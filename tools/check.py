@@ -12,7 +12,8 @@ sys.path.insert(0, str(ROOT / "src"))
 
 fails, warns = [], []
 
-SAMPLE = 'const u = "https://x.y/z"; // c\n/* b */ console.log(u);\n'
+# Short + marker strings must survive literally; long strings MAY be encrypted by design.
+SAMPLE = 'const u = "https://x.y/z"; const s = "ab"; const m = "__keepme"; // c\n/* b */ console.log(u, s, m);\n'
 
 
 def main():
@@ -36,10 +37,9 @@ def main():
         except Exception as e:
             fails.append(f"pass '{name}': crashed on sample: {e}")
             continue
-        if "https://x.y/z" not in out:
-            fails.append(f"pass '{name}': corrupted string content in sample")
-        if "console.log" not in out:
-            fails.append(f"pass '{name}': dropped code in sample")
+        for keep in ('"ab"', '"__keepme"', "console.log"):
+            if keep not in out:
+                fails.append(f"pass '{name}': dropped/corrupted {keep} in sample")
     fixtures = list((ROOT / "tests").glob("*.js"))
     if not fixtures:
         warns.append("no fixtures in tests/")
