@@ -30,8 +30,10 @@ A layer OVER JavaScript: output runs anywhere JS runs, no installs, no native bu
 
 ## Terms (user-defined, do not rename)
 - **forge** — Python app: cleans raw JS and translates it to `.fs`.
-- **forgescript** — the language AND its JS-written runner. Runner traits: plain JS, no notes,
-  encrypted variables + encrypted data, small, minimal, secure. Runs ONLY `.fs` code.
+- **forgescript** — the language AND its JS-written runner. Runner traits: plain UNENCRYPTED JS
+  (only stage-1 passes: stripped, short names — by forge itself), small, minimal, fast, stable.
+  Runs ONLY `.fs` code. Light anti-debug embedded (e.g. halt when devtools opens).
+  Rationale: the runner hides nothing itself; secrecy lives in the `.fs` payloads it reads.
 - **forgescript (language)** — JS-based, every JS element replaced with a hard-to-read but
   lightweight variant. Purpose: make raw JS hard to read.
 - **.fs** — file type the runner executes and understands.
