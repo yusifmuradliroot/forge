@@ -30,3 +30,6 @@
     Exceptions (translate = breakage): functional literals (user cues like "konsol erişimim yok",
     markers, identifiers), code strings, URLs, and user-facing legal text explicitly kept
     in the users' language (recorded per file below). Legacy bulk is translated on touch.
+17. **Version rides with the file.** When updating any file that carries version info
+    (`@version`, `plugin.json`, `VERSION`, const), bump it IN THE SAME commit.
+    A code change without its version bump is an incomplete change.
