@@ -26,3 +26,7 @@
     glance over EVERY tracked file (`git ls-files`) for staleness against the change.
     Docs, README, CHANGELOG and WHEREWEARE must match the code. The README miss of v2.0.0
     is why this rule exists.
+16. **English only on GitHub.** Every tracked file must be English down to the finest detail.
+    Exceptions (translate = breakage): functional literals (user cues like "konsol erişimim yok",
+    markers, identifiers), code strings, URLs, and user-facing legal text explicitly kept
+    in the users' language (recorded per file below). Legacy bulk is translated on touch.

@@ -1,58 +1,57 @@
-# forge derin analiz (v1.0.0) — nasıl çalışır, nerede kırılır, v2'de ne var
+# forge deep analysis (v1.0.0) — how it works, where it breaks, what v2 holds
 
-Bu belge teorik + proplu testlerin sonucudur. Dili bilerek sadedir.
+This file records theory + probe-tested results. Deliberately plain language.
 
-## 1. Boru hattı ne yapar (ispatlı)
+## 1. What the pipeline does (proven)
 
-`strip → short → crypt → pack` — her adım metin dönüşümü, kod asla çalıştırılmaz.
+`strip → short → crypt → pack` — every step is a text transform, code is never executed.
 
-| Adım | Garanti | Kanıt |
+| Step | Guarantee | Proof |
 |---|---|---|
-| `strip` | yorum siler, string/regex/template'a dokunmaz | fixture + bölme/regex probu (`a/b/2` vs `/ab+c/gi` ayırt edildi) |
-| `short` | SADECE bir kez tanımlanmış ismi kısaltır; gölgeleme, property (`o.x`), anahtar (`{x:}`), `new x`, global denenmez | işkence fixture'ı: `alpha` gölgelendi→korundu, `beta` key/property→korundu, regex/string içi sağ |
-| `crypt` | uzun stringleri şifreler; kısa/`__*`/directive/anahtar/template sağ | node ile birebir aynı çıktı |
-| `pack` | tüm dosyayı blob yapar, `FS:1` etiketi koyar | node `--check` OK |
-| runner | etiketi okur → kapı (anti-debug) → çözer → koşturur → siler; bozuk etikette reddeder | yanlış etiket/boş girdi → null, kod çalışmaz |
+| `strip` | removes comments, never touches strings/regex/templates | fixture + division-vs-regex probe (`a/b/2` vs `/ab+c/gi` distinguished) |
+| `short` | renames ONLY single-declaration names; shadowing, properties (`o.x`), keys (`{x:}`), `new x`, globals untouched | torture fixture: shadowed `alpha` kept, `beta` as key/property kept, regex/string content intact |
+| `crypt` | encrypts long strings; short/`__*`/directive/key/template strings kept | node-verified identical output |
+| `pack` | whole file into a blob, `FS:1` tag | node `--check` OK |
+| runner | reads tag → gate (anti-debug) → decrypts → runs → wipes; refuses on bad tag | wrong tag/empty input → null, nothing runs |
 
-Uçtan uca: ham JS → `.fs` → runner → **birebir aynı davranış** (68KB gerçek dosyada da).
+End to end: raw JS → `.fs` → runner → **identical behavior** (also on a 68KB real file).
 
-## 2. Bulunan BUG (sıcak düzeltme gerekli)
+## 2. BUG found (hotfix required)
 
-**ASCII-dışı içerik pack'te bozuluyor.** Türkçe değişken/yorum-dışı harf veya emoji
-(`değişken`, `😀`) pack adımında çöpe dönüşüyor. Sebep: pack her karakteri 2 hex
-haneye sığdırmaya çalışıyor, Türkçe/emoji 2 haneye sığmıyor, kayma oluyor.
-Çözüm: pack önce UTF-8 bayta çevirmeli, runner `TextDecoder` ile açmalı. Türkçe
-içerik kaçınılmaz → v1 "tamam" denmeden bu düzeltilmeli.
+**Non-ASCII content breaks in pack.** Turkish identifiers/literals or emoji turn into
+garbage at pack time. Cause: pack fits every char into 2 hex digits; Turkish/emoji
+don't fit, the stream misaligns. Fix: pack must work on UTF-8 bytes first, runner
+opens via `TextDecoder`. Turkish content is unavoidable → fix before v1 is called done.
 
-## 3. Sınırlar (tasarım gereği, bug değil)
+## 3. Limits (by design, not bugs)
 
-- Runner DÜZ metindir: şifre çözme mantığı okunabilir. Gizlenen içeriktir, algoritma değil.
-- Bellek garantisi "elinden gelen": çalıştırma anında düz metin bellekte durur.
-  Parça-parça çalıştırma (v2) bunu kapatır.
-- `debugger` kapısı hafif: kararlı saldırganı durdurmaz, meraklıyı durdurur.
-- Tek statik anahtar: bir dosyanın akışı çözülürse yöntem belli olur (içerik değil).
+- The runner is PLAIN text: the algorithm is readable, the content is what's hidden.
+- Memory guarantee is best-effort: plaintext exists in memory at execution time.
+  Chunked execution (v2) closes this.
+- The `debugger` gate is light: stops the curious, not the determined.
+- Single static key: recovering one file's stream reveals the method (not the content).
 
-## 4. v2 iş listesi (öncelikli)
+## 4. v2 work list (prioritized)
 
-**Sıcak düzeltme (v1 bitmeden):**
-1. pack UTF-8 + runner `TextDecoder` (yukarıdaki bug).
+**Hotfix (before v1 is done):**
+1. pack UTF-8 + runner `TextDecoder` (the bug above).
 
-**Özellik:**
-2. Parçalı IR (`FS:2`): segment + harita, tam metin bellekte hiç durmaz.
-3. Bütünlük imzası: runner koşturmadan önce paketi doğrular (kurcalanmış `.fs` çalışmaz).
-4. Parça-bağımlı anahtarlar: tek akış çözümü yetmez hale gelir.
-5. Gerçek ortam testi: mobil Firefox + Violentmonkey (`Function`, kapı eşiği, hız).
-6. Geliştirici modu: 2. aşamayı atlayan okunabilir çıktı (bizim debug için).
+**Features:**
+2. Chunked IR (`FS:2`): segments + map, full plaintext never in memory.
+3. Integrity signature: runner verifies before running (tampered `.fs` never runs).
+4. Per-segment keys: one recovered stream is no longer enough.
+5. Real-environment test: mobile Firefox + Violentmonkey (`Function`, gate threshold, speed).
+6. Developer mode: readable output skipping stage 2 (for our own debugging).
 
-**Optimizasyon:**
-7. Blob hex→base64 (boyut ~2x → ~1.37x; format bayrağı gerekir).
-8. Eşik ayarı: crypt uzunluk sınırı ölçüme göre.
+**Optimizations:**
+7. Blob hex→base64 (size ~2x → ~1.37x; needs a format flag).
+8. Threshold tuning: crypt length limit by measurement.
 
-**Ölü kod:**
-9. Şu an ölü yok (sıfır rebuild). Eski 0.4.0 history'de durur, sorun değil.
+**Dead code:**
+9. None dead right now (fresh rebuild). Old 0.4.0 line stays in history, fine.
 
-**Diğer işler:**
-10. Orbit'e gömme + export hattı + `mustContain` uyumu (paketli `.fs`'de marker gizli →
-    (yükleyen taraf önce etiketi görüp açmalı).
-11. Doküman rewrite: DESIGN/TUTORIAL/CLI/FAQ v1'e göre yeniden yazılacak (wipe'ta gitti,
-    sadece FORMAT.md var).
+**Other work:**
+10. Orbit embedding + export line + `mustContain` interplay (packed `.fs` hides markers →
+    the loading side must see the tag and open it first).
+11. Docs rewrite: DESIGN/TUTORIAL/CLI/FAQ rewritten for v1 (wipe took them,
+    only FORMAT.md exists).
