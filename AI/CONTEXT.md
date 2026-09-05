@@ -29,3 +29,8 @@ Phase A — pass pipeline (done in 0.2.0):
 Phase B — secure language (next):
 4. custom language + JS interpreter — code ships in our language, our runtime executes it
 5. security layers on top (verify, integrity checks, anti-tamper at runtime)
+
+## Architecture constraint
+A layer OVER JavaScript, never beside it: compiles to JS and/or interprets via a
+JS-hosted runtime. Runs anywhere JS runs (browser, Violentmonkey included).
+No native builds, no new runtime to install — JS is the only foundation.
