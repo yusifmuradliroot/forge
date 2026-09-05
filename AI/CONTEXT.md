@@ -39,6 +39,9 @@ A layer OVER JavaScript: output runs anywhere JS runs, no installs, no native bu
 ## Distribution design
 - Plugins ship as `.fs` files on GitHub.
 - The forgescript runner is EMBEDDED in orbit: voyager → orbit → embedded runner.
-- Orbit fetches `.fs`, routes to the runner, runner executes. No plaintext plugin code on disk.
+- Orbit fetches `.fs`, orders the runner to execute it. ALL execution logic lives in the
+  runner — `.fs` is PURE DATA (encrypted payload + tag), never carries its own loader.
+  (An in-file mini loader is rejected: duplicated per file, harder to update, pointless
+  when the runner is already there.)
 - Runner and language MUST be versioned together (compat matrix: runner vX runs `.fs` vY).
   Language changes require runner + files in lockstep — never bump one side alone.
