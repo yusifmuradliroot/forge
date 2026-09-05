@@ -19,6 +19,10 @@ Open-source release possible later.
 ## In progress
 - (next: wire into abyss → grimorium export; runner embedding in orbit)
 
+## Next (later, trigger-based — NOT scheduled)
+- v3 chunked execution (never full plaintext in memory; needs scope-aware splitter).
+  Triggers: v2 observed cracked, threat level rises, or export line fully stable.
+
 ## Next
 - v1 (LOCKED scope): `strip` → `short` → `crypt`. This alone beats most attackers.
 - Then forgescript track in locked build order: format sketch → runner → finalize format → translator.
