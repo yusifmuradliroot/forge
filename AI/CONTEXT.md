@@ -38,12 +38,13 @@ A layer OVER JavaScript: output runs anywhere JS runs, no installs, no native bu
   lightweight variant. Purpose: make raw JS hard to read.
 - **.fs** — file type the runner executes and understands.
 
-## Distribution design
-- Plugins ship as `.fs` files on GitHub.
-- The forgescript runner is EMBEDDED in orbit: voyager → orbit → embedded runner.
-- Orbit fetches `.fs`, orders the runner to execute it. ALL execution logic lives in the
-  runner — `.fs` is PURE DATA (encrypted payload + tag), never carries its own loader.
-  (An in-file mini loader is rejected: duplicated per file, harder to update, pointless
-  when the runner is already there.)
+## Distribution design (FUTURE — locked direction)
+- Only ONE `.js` file stays public: `voyager.user.js` (loader + embedded forgescript runner).
+- Everything else ships as `.fs`: `omni.fs` (framework, ex-orbit) + plugin `.fs` files.
+- Chain: voyager → embedded runner → `omni.fs` → plugin `.fs` files.
+- "orbit" as a name is RETIRED; the framework file is called `omni` (brand = file).
+- Raw sources stay JS in abyss; forge translates to `.fs` at export (translator exists for this).
 - Runner and language MUST be versioned together (compat matrix: runner vX runs `.fs` vY).
   Language changes require runner + files in lockstep — never bump one side alone.
+- `.fs` is PURE DATA (never carries its own loader). Open question (later): how
+  `mustContain` checks work when markers hide inside blobs — orbit-side unpack-first or tag check.
