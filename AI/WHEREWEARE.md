@@ -16,11 +16,8 @@ Open-source release possible later.
 - (next: forge core passes, one by one with approval)
 
 ## Next
-- `strip` pass (comments/notes removal, string-aware)
-- `short` pass (minimal renames, single-declaration locals)
-- `crypt` pass (string encryption, `__*`/directive/key safe)
-- `pack` pass (whole-file pack + mini loader + tag)
-- Wire into abyss → grimorium export
+- v1 (LOCKED scope): `strip` → `short` → `crypt`. This alone beats most attackers.
+- v2 (later): `pack` (whole-file or segmented IR) + wire into abyss → grimorium export
 
 ## Open problems
 - (none — rebuild)

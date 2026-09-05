@@ -14,8 +14,8 @@ VERSION               → single version for the whole tool
 ```
 
 ## Pipeline order
-strip → short → crypt → pack. Clean first, rename second, encrypt third
-(encrypted blobs must not be renamed), pack always last.
+v1: strip → short → crypt. Clean first, rename second, encrypt third
+(encrypted blobs must not be renamed). `pack` deferred to v2.
 
 ## Architecture constraint
 A layer OVER JavaScript: output runs anywhere JS runs, no installs, no native builds.
