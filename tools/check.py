@@ -21,7 +21,7 @@ def main():
         fails.append("missing src/runner/forgescript.js")
     else:
         src = runner.read_text(encoding="utf-8")
-        for keep in ("ForgeScript", "FS:1", "Function"):
+        for keep in ("ForgeScript", "FS:1", "FS:2", "Function", "TextDecoder"):
             if keep not in src:
                 fails.append(f"runner missing {keep!r}")
         if "://" in src or "/*" in src:
@@ -31,6 +31,12 @@ def main():
     for want in ("strip", "short", "crypt", "pack"):
         if want not in passes:
             fails.append(f"missing v1 pass: {want}")
+    try:
+        from passes.pack import fnv1a
+        if "%08x" % fnv1a(b"foobar") != "bf9cf968":
+            fails.append("pack fnv1a vector mismatch (want bf9cf968)")
+    except Exception as e:
+        fails.append(f"pack fnv1a import failed: {e}")
     sample = 'const greeting = "hello packed world"; // c\nconsole.log(greeting);\n'
     for name in passes:
         try:
@@ -45,6 +51,20 @@ def main():
             out = mod.run(sample)
         except Exception as e:
             fails.append(f"pass '{name}': crashed on sample: {e}")
+            continue
+        if name == "pack":
+            import json as _json
+            lines = out.split("\n")
+            if not lines or lines[0] != "FS:2":
+                fails.append("pack: missing FS:2 tag")
+            else:
+                try:
+                    m = _json.loads(lines[1])
+                    blobs = [b for b in lines[2:] if b]
+                    if len(blobs) != 3 or sorted(m.get("o", [])) != [0, 1, 2] or not m.get("s"):
+                        fails.append("pack: bad manifest (want 3 blobs, order perm of 0..2, sig)")
+                except Exception as e:
+                    fails.append(f"pack: manifest invalid: {e}")
     if fails:
         for f in fails:
             print("FAIL " + f)

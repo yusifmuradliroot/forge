@@ -20,9 +20,13 @@ def main():
     ap.add_argument("dst", help="output .fs file")
     ap.add_argument("--passes", default=",".join(DEFAULT),
                     help="comma-separated pass names from src/passes/")
+    ap.add_argument("--dev", action="store_true",
+                    help="developer mode: skip pack, emit readable processed JS")
     args = ap.parse_args()
 
     names = [p.strip() for p in args.passes.split(",") if p.strip()]
+    if args.dev:
+        names = [p for p in names if p != "pack"]
     if "pack" in names:
         names = [p for p in names if p != "pack"] + ["pack"]
 
