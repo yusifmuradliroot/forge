@@ -1,7 +1,12 @@
 # CONTEXT — infrastructure map (forge, private)
 
 ## Role
-Standalone mini compiler. No dependency on game repos; Omni pipeline is just the first client.
+Secure programming language + interpreter + security layers. NOT gartic-only — general purpose.
+Omni pipeline is just the first client. Open-source release is possible later.
+
+## Open-source hygiene (mandatory from day one)
+Keep the relicense option open: zero copied code, zero dependencies, original
+implementation everywhere. Today's custom license must never become a blocker.
 
 ## Layout
 ```
@@ -17,7 +22,10 @@ VERSION               → single version for the whole tool
 - String/regex-aware where needed (see `strip_comments` as reference implementation).
 
 ## Roadmap
-1. mangle identifiers (scope-aware rename) — vs casual readers
-2. string encryption (runtime decoder stub) — vs free-AI readers
-3. AI-confusion layer (dead code, misleading comments, fake notes) — vs paid-AI + tools
-4. custom transform (proprietary pass) — final trump card, needs private source maps
+Phase A — pass pipeline (done in 0.2.0):
+1. mangle identifiers — vs casual readers ✅
+2. string encryption — vs free-AI readers ✅
+3. AI-confusion layer — vs paid-AI + tools ✅
+Phase B — secure language (next):
+4. custom language + JS interpreter — code ships in our language, our runtime executes it
+5. security layers on top (verify, integrity checks, anti-tamper at runtime)

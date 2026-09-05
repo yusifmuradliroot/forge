@@ -1,8 +1,9 @@
 # WHEREWEARE — living state (AI: keep this updated)
 
 ## Goal
-General-purpose mini compiler: JS in → protection/build passes → JS out.
-First client: Gartic.io Omni pipeline (abyss → grimorium). Must stay usable beyond it.
+Secure programming language + interpreter + security layers. General purpose, not gartic-only.
+First client: Gartic.io Omni pipeline (abyss → grimorium). Open-source release possible later —
+keep code original and dependency-free so relicensing stays possible.
 
 ## Done
 - Private repo `forge` created, branch `main`.
