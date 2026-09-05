@@ -7,8 +7,8 @@ keep code original and dependency-free so relicensing stays possible.
 
 ## Done
 - Private repo `forge` created, branch `main`.
-- v0.3.0: 3 passes (strip_comments, mangle, string_crypt), full chain verified on
-  real 68KB file (node --check OK, runtime output identical). `ai_confuse` removed (minimalism).
+- v0.4.0: 4 passes (+`pack_file` whole-file encryption, `__forge_packed_v1` tag).
+  Full chain on real 68KB file: node --check OK, runtime identical. `ai_confuse` removed (minimalism).
 - Full docs: DESIGN (+minimalism), TUTORIAL, CLI, FAQ, PASSES catalog. checker PASS.
 - AI infra: AGENTS.md + AI/{RULES,WHEREWEARE,CONTEXT,LEARNINGS}.
 - Infra: topics, CHANGELOG, docs/PASSES.md, tools/check.py (PASS).
