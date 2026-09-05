@@ -20,9 +20,17 @@ v1: strip → short → crypt. Clean first, rename second, encrypt third
 ## Architecture constraint
 A layer OVER JavaScript: output runs anywhere JS runs, no installs, no native builds.
 
-## Distribution design (ForgeScript)
-- Plugins ship as `.fs` files (written in ForgeScript) on GitHub.
-- The ForgeScript runner is EMBEDDED in orbit: voyager → orbit → embedded ForgeScript.
+## Terms (user-defined, do not rename)
+- **forge** — Python app: cleans raw JS and translates it to `.fs`.
+- **forgescript** — the language AND its JS-written runner. Runner traits: plain JS, no notes,
+  encrypted variables + encrypted data, small, minimal, secure. Runs ONLY `.fs` code.
+- **forgescript (language)** — JS-based, every JS element replaced with a hard-to-read but
+  lightweight variant. Purpose: make raw JS hard to read.
+- **.fs** — file type the runner executes and understands.
+
+## Distribution design
+- Plugins ship as `.fs` files on GitHub.
+- The forgescript runner is EMBEDDED in orbit: voyager → orbit → embedded runner.
 - Orbit fetches `.fs`, routes to the runner, runner executes. No plaintext plugin code on disk.
-- Runner and `.fs` language MUST be versioned together (compat matrix: runner vX runs `.fs` vY).
+- Runner and language MUST be versioned together (compat matrix: runner vX runs `.fs` vY).
   Language changes require runner + files in lockstep — never bump one side alone.
