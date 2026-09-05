@@ -18,8 +18,9 @@
 12. **Context cues.** Record mode switches in `WHEREWEARE.md` under "User context":
     - "konsol erişimim yok" → mobile: visual-feedback diagnosis only.
     - "konsol erişimim var" → desktop: console logs may be used.
-13. **Two-repo sync — only when needed.** Shared contracts stay aligned with abyss/grimorium
-    tooling. Repo-specific files never cross repos.
+13. **Independence.** This repo answers to no other repo. No client names, no product
+    roadmaps, no cross-repo mirroring. Consumers pin a forge VERSION and adapt on
+    their side; upstream never chases downstream.
 14. **Open-source hygiene.** Original code only, zero dependencies — relicense option stays open.
 15. **Sweep before close.** Before committing a version bump or closing a work block,
     glance over EVERY tracked file (`git ls-files`) for staleness against the change.

@@ -1,9 +1,8 @@
 # WHEREWEARE — living state (AI: keep this updated)
 
 ## Goal
-JS protection layer (general purpose, not gartic-only). Pipeline v1:
-strip → short → crypt → pack. First client: Omni export (abyss → grimorium).
-Open-source release possible later.
+JS protection layer, general purpose and independent. Pipeline v2:
+strip → short → crypt → pack (FS:2). Open-source release possible later.
 
 ## Done
 - Repo wiped and restarted from zero (old 0.4.0 line in git history).
@@ -23,10 +22,9 @@ Open-source release possible later.
 - v3 chunked execution (never full plaintext in memory; needs scope-aware splitter).
   Triggers: v2 observed cracked, threat level rises, or export line fully stable.
 
-## Next
-- v1 (LOCKED scope): `strip` → `short` → `crypt`. This alone beats most attackers.
-- Then forgescript track in locked build order: format sketch → runner → finalize format → translator.
-- v2 (later): `pack` + wire into abyss → grimorium export
+## Next (trigger-based — NOT scheduled)
+- v3 chunked execution (never full plaintext in memory; needs scope-aware splitter).
+  Triggers: v2 observed cracked, threat level rises, or a consumer funds it.
 
 ## Open problems
 - (none — rebuild)

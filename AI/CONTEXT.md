@@ -2,7 +2,7 @@
 
 ## Role
 JS protection layer. Raw JS in, working-but-hard-to-read JS out.
-First client: abyss → grimorium export. Usable beyond it.
+Independent tool — answers to no other repo. Consumers pin a VERSION and adapt.
 
 ## Layout
 ```
@@ -13,17 +13,15 @@ docs/                 → design docs (pending)
 VERSION               → single version for the whole tool
 ```
 
-## Pipeline order
-v1: strip → short → crypt. Clean first, rename second, encrypt third
-(encrypted blobs must not be renamed). `pack` deferred to v2.
+## Pipeline order (v2.0.0)
+strip → short → crypt → pack. Clean first, rename second, encrypt third
+(encrypted blobs must not be renamed), pack always last.
 
-## Build order (locked)
-1. `.fs` format sketch (skeleton target for the runner — half page, not full spec)
-2. forgescript runner (minimal, fast, secure; light anti-debug embedded;
-   environment-agnostic core, pluggable host API for browser/Violentmonkey/node)
-3. Finalize `.fs` format against the runner
-4. forge translator (raw JS → `.fs`)
-Runner core MUST stay DOM-free. Full-tamper anti-debug is out (cat-and-mouse).
+## Embedding pattern (for consumers)
+Host loads `src/runner/forgescript.js` once, feeds it `.fs` payloads via
+`ForgeScript.run(text)`. Runner core is DOM-free: browser, userscript manager,
+node — anywhere JS runs. Runner refuses unknown tags and tampered payloads.
+Runner and language version together: runner vX runs `.fs` vY (see FORMAT.md).
 
 ## Architecture constraint
 A layer OVER JavaScript: output runs anywhere JS runs, no installs, no native builds.
@@ -38,14 +36,8 @@ A layer OVER JavaScript: output runs anywhere JS runs, no installs, no native bu
   lightweight variant. Purpose: make raw JS hard to read.
 - **.fs** — file type the runner executes and understands.
 
-## Distribution design (FUTURE — locked direction)
-- Only ONE `.js` file stays public: `voyager.user.js` (loader + embedded forgescript runner).
-- Everything else ships as `.fs`: `omni.fs` (framework, ex-orbit) + plugin `.fs` files.
-- Chain: voyager → embedded runner → `omni.fs` → plugin `.fs` files.
-- "orbit" as a name is RETIRED; the framework file is called `omni` (brand = file).
-- Raw sources stay JS in abyss; forge translates to `.fs` at export (translator exists for this).
-- Runner and language MUST be versioned together (compat matrix: runner vX runs `.fs` vY).
-  Language changes require runner + files in lockstep — never bump one side alone.
-- `.fs` is PURE DATA (never carries its own loader). Open question (later): how
-  `mustContain` checks work when markers hide inside blobs — unpack-first or tag check
-  on the loading side (omni framework, ex-orbit).
+## Payload contract
+- `.fs` is PURE DATA (never carries its own loader): tag line + encrypted payload.
+- Loaders holding markers inside blobs must unpack-first or tag-check before scanning.
+- Format versions: FS:1 (legacy, readable), FS:2 (current: segments, keys, signature).
+  Reserved: FS:3 chunked execution (needs a scope-aware splitter).

@@ -53,6 +53,6 @@ içerik kaçınılmaz → v1 "tamam" denmeden bu düzeltilmeli.
 
 **Diğer işler:**
 10. Orbit'e gömme + export hattı + `mustContain` uyumu (paketli `.fs`'de marker gizli →
-    (yükleyen taraf — artık omni — önce etiketi görüp açmalı).
+    (yükleyen taraf önce etiketi görüp açmalı).
 11. Doküman rewrite: DESIGN/TUTORIAL/CLI/FAQ v1'e göre yeniden yazılacak (wipe'ta gitti,
     sadece FORMAT.md var).
