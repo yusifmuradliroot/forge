@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+## [0.4.0]
+- `pack_file`: whole-file XOR-hex + `Function` loader, `__forge_packed_v1` tag, node-verified
+
 ## [0.3.0]
 - REMOVED `ai_confuse`: decoys/fake notes are bloat — minimalism is now a hard principle
 - Pipeline is now `strip_comments → mangle → string_crypt`, output stays minimal

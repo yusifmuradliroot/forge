@@ -6,12 +6,14 @@ No parsing to AST, no dependencies, single python file per pass. Boring on purpo
 every pass is auditable in one screen.
 
 ```
-in.js ──► strip_comments ──► mangle ──► string_crypt ──► out.js
-              (readability)    (names)      (strings)
+in.js ──► strip_comments ──► mangle ──► string_crypt ──► [pack_file] ──► out.js
+              (readability)    (names)      (strings)       (whole file, optional last)
 ```
 
 Order matters: clean first, rename second, encrypt strings third (so encrypted blobs
-don't get renamed).
+don't get renamed). `pack_file` is always last and optional — it hides everything,
+including loader markers, so loaders must detect its `__forge_packed_v1` tag and unpack
+before `mustContain` checks (orbit-side work, pending).
 
 ## Minimalism (hard principle)
 Output stays minimal: notes stripped, variables renamed short, zero decoys, zero fake
