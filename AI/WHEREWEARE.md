@@ -17,7 +17,7 @@ Open-source release possible later.
 - Device: mobile, Firefox-based. Console: NONE → visual-feedback diagnosis only.
 
 ## In progress
-- (next: wire into abyss → grimorium export; runner embedding in orbit)
+- (next: wire into abyss → grimorium export; runner embedding in voyager)
 
 ## Next (later, trigger-based — NOT scheduled)
 - v3 chunked execution (never full plaintext in memory; needs scope-aware splitter).

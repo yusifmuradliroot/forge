@@ -47,4 +47,5 @@ A layer OVER JavaScript: output runs anywhere JS runs, no installs, no native bu
 - Runner and language MUST be versioned together (compat matrix: runner vX runs `.fs` vY).
   Language changes require runner + files in lockstep — never bump one side alone.
 - `.fs` is PURE DATA (never carries its own loader). Open question (later): how
-  `mustContain` checks work when markers hide inside blobs — orbit-side unpack-first or tag check.
+  `mustContain` checks work when markers hide inside blobs — unpack-first or tag check
+  on the loading side (omni framework, ex-orbit).
