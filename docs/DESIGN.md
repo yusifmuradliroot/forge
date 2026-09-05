@@ -6,12 +6,18 @@ No parsing to AST, no dependencies, single python file per pass. Boring on purpo
 every pass is auditable in one screen.
 
 ```
-in.js ──► strip_comments ──► mangle ──► string_crypt ──► ai_confuse ──► out.js
-              (readability)    (names)      (strings)        (noise)
+in.js ──► strip_comments ──► mangle ──► string_crypt ──► out.js
+              (readability)    (names)      (strings)
 ```
 
 Order matters: clean first, rename second, encrypt strings third (so encrypted blobs
-don't get renamed), add noise last (so noise itself isn't transformed).
+don't get renamed).
+
+## Minimalism (hard principle)
+Output stays minimal: notes stripped, variables renamed short, zero decoys, zero fake
+content, zero dead code. Protection comes from the transform itself (mangle, encryption,
+proprietary pack format) — never from noise. Small output is a feature: fast on mobile,
+easy to diff, honest to audit.
 
 ## Guarantees (every pass)
 1. Pure function `run(code: str) -> str`. No I/O, no config files, no network.

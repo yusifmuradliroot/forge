@@ -9,6 +9,13 @@
   comment-like content inside strings get corrupted. State machine, not regex.
 - Fixture-driven: `tests/basic.js` covers trailing/block/fake comments. Eyeball output each run.
 
+## 2026-09-05 — minimalism reversal
+- User killed `ai_confuse`: no fake notes, no decoys, no dead code — output must stay minimal
+  (strip notes, short renames). Protection comes from the transform itself, never from noise.
+  Small output = fast on mobile + auditable. Recorded as hard principle in `docs/DESIGN.md`.
+- Lesson: when user reverses an approved feature, remove it fully (code + docs + catalog),
+  keep history honest in CHANGELOG, don't leave dangling references.
+
 ## 2026-09-05 — two real bugs caught by real code (68KB orbit.js)
 - Template backtrack: tokenizer reset scan index backwards after `${...}`, swallowing the
   closing backtick and merging following code into a string token (idents silently unrenamed).

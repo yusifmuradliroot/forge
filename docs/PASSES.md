@@ -8,8 +8,10 @@ never changes runtime behavior.
 | `strip_comments` | done | all | string-aware (`' " \``), fixture `tests/basic.js` |
 | `mangle` | done | casual readers | single-declaration locals only; shadow/property/key/regex/template safe; fixture `tests/mangle.js` |
 | `string_crypt` | done | free-AI readers | `__f` XOR-hex stub; skips short/`__*`/directives/object keys/templates; fixture `tests/string_crypt.js`, node-verified |
-| `ai_confuse` | done | paid-AI + tools | fake banner + 3 collision-checked decoys, append-only |
-| `custom` | planned (last) | pros | proprietary transform, needs private source maps |
+| `pack` | planned | paid-AI + tools | proprietary pack format + mini loader (see `docs/IR.md`) |
+| `custom` | planned (last) | pros | full custom language layer, needs private source maps |
+
+Retired: `ai_confuse` (removed in 0.3.0 — violated minimalism: decoys and fake notes are bloat).
 
 ## Adding a pass
 1. Create `src/passes/<name>.py` with `run(code)`.

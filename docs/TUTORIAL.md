@@ -8,7 +8,7 @@ Output: same code, comments gone, strings intact.
 
 ## 2. Chain passes
 ```bash
-python3 tools/forge.py in.js out.js --passes strip_comments,mangle,string_crypt,ai_confuse
+python3 tools/forge.py in.js out.js --passes strip_comments,mangle,string_crypt
 ```
 Passes run left to right. Recommended order is the one above (see `DESIGN.md`).
 
