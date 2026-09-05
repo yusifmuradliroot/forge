@@ -21,3 +21,7 @@
 13. **Two-repo sync — only when needed.** Shared contracts stay aligned with abyss/grimorium
     tooling. Repo-specific files never cross repos.
 14. **Open-source hygiene.** Original code only, zero dependencies — relicense option stays open.
+15. **Sweep before close.** Before committing a version bump or closing a work block,
+    glance over EVERY tracked file (`git ls-files`) for staleness against the change.
+    Docs, README, CHANGELOG and WHEREWEARE must match the code. The README miss of v2.0.0
+    is why this rule exists.
