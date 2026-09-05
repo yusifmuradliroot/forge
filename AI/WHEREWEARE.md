@@ -7,13 +7,15 @@ Open-source release possible later.
 
 ## Done
 - Repo wiped and restarted from zero (old 0.4.0 line in git history).
-- Infra rebuilt: README, VERSION `0.1.0`, CHANGELOG, LICENSE, AGENTS.md + AI/.
+- Infra rebuilt: README, CHANGELOG, LICENSE, AGENTS.md + AI/.
+- v1.0.0 WORKS: strip/short/crypt/pack ported from proven code, runner written,
+  FORMAT.md spec, e2e verified (raw → .fs → runner → identical), 68KB real file OK.
 
 ## User context
 - Device: mobile, Firefox-based. Console: NONE → visual-feedback diagnosis only.
 
 ## In progress
-- (next: forge core passes, one by one with approval)
+- (next: wire into abyss → grimorium export; runner embedding in orbit)
 
 ## Next
 - v1 (LOCKED scope): `strip` → `short` → `crypt`. This alone beats most attackers.

