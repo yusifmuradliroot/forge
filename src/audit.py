@@ -7,6 +7,8 @@ are shown as KEPT (banner/probe must survive on purpose).
 
 import re
 
+from scan import build_mask
+
 _PATTERNS = [
     ("console", re.compile(r"\bconsole\s*\.\s*(log|warn|error|info|debug|table|trace|assert|count|time|timeEnd)\b")),
     ("debugger", re.compile(r"\bdebugger\b")),
@@ -20,10 +22,6 @@ _PATTERNS = [
 
 def findings(code):
     """Return [(line, kind, snippet)] for code regions only (mask first)."""
-    try:
-        from scan import build_mask
-    except ImportError:
-        from passes.scan import build_mask  # noqa (unreachable in practice)
     mask = build_mask(code)
     out = []
     for kind, rx in _PATTERNS:

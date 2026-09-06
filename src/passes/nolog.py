@@ -5,13 +5,7 @@ line or block comments) survive. Stripped calls leave ';' (dangling-if safe).
 Expressions (x = console.log(..), ternary) are never touched.
 Runs FIRST, before strip (it honors comments strip would delete)."""
 
-try:
-    from scan import tokenize
-except ImportError:
-    import os as _os
-    import sys as _sys
-    _sys.path.insert(0, _os.path.join(_os.path.dirname(__file__), ".."))
-    from scan import tokenize
+from scan import tokenize
 
 
 

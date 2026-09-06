@@ -7,15 +7,8 @@ Conservative by design — a name is renamed ONLY if ALL hold:
 Everything else is left untouched. Strings, comments, regex, templates are opaque.
 """
 
-try:
-    from scan import tokenize, _regex_allowed, KEYWORDS_BEFORE_REGEX, build_mask
-    from poison import find_poison
-except ImportError:
-    import os as _os
-    import sys as _sys
-    _sys.path.insert(0, _os.path.join(_os.path.dirname(__file__), ".."))
-    from scan import tokenize, _regex_allowed, KEYWORDS_BEFORE_REGEX, build_mask
-    from poison import find_poison
+from scan import tokenize, _regex_allowed, KEYWORDS_BEFORE_REGEX, build_mask
+from poison import find_poison
 
 
 import re
