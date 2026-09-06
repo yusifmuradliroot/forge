@@ -53,3 +53,9 @@
   the chain IS the bootstrap, differentially verified.
 - Test-design lesson: Function-constructed code returns undefined without explicit
   `return` (spec) — fixtures for behavior comparison must return values.
+
+## 2026-09-05 — false alarm: compare like with like
+- A pack round-trip "mismatch" was my test bug: decoded output (post-crypt bytes)
+  was compared against the PRE-chain file. crypt legitimately grows size (hex).
+  Correct check: decode === --dev output (same stage). It matched byte-exact.
+- Lesson: differential tests must pin the EXACT stage on both sides.
