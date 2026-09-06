@@ -42,6 +42,8 @@ def run(code: str) -> str:
                     eol = n if eol < 0 else eol
                     keep = "keep-log" in code[k:eol]
                 if not keep:
+                    # empty statement: keeps `if (c) <call>`-style bodies valid
+                    out.append(';')
                     i = j
                     continue
                 out.append(code[i:j])
