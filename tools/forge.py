@@ -27,6 +27,10 @@ def main():
                     help="developer mode: skip pack, emit readable processed JS")
     ap.add_argument("--embed", default="",
                     help="inline this JS file at the /*__FORGE_RUNNER__*/ marker first")
+    ap.add_argument("--embed-max", type=int, default=8192,
+                    help="reject embed source larger than this (bytes)")
+    ap.add_argument("--embed-has", default="",
+                    help="embed source must contain this string (e.g. ForgeScript)")
     args = ap.parse_args()
 
     names = [p.strip() for p in args.passes.split(",") if p.strip()]
@@ -37,12 +41,19 @@ def main():
 
     code = Path(args.src).read_text(encoding="utf-8")
     if args.embed:
-        snippet = Path(args.embed).read_text(encoding="utf-8")
+        raw_snippet = Path(args.embed).read_text(encoding="utf-8")
+        if len(raw_snippet.encode("utf-8")) > args.embed_max:
+            print(f"embed source too large ({len(raw_snippet)} chars > {args.embed_max} cap), aborting")
+            return 1
+        if args.embed_has and args.embed_has not in raw_snippet:
+            print(f"embed source missing required {args.embed_has!r}, aborting")
+            return 1
+        snippet = raw_snippet
         if "/*__FORGE_RUNNER__*/" not in code:
             print("embed marker /*__FORGE_RUNNER__*/ not found, aborting")
             return 1
         code = code.replace("/*__FORGE_RUNNER__*/", snippet, 1)
-        print(f"embedded {args.embed} ({len(snippet)} chars)")
+        print(f"embedded {args.embed} ({len(snippet)} chars, verified)")
     for name in names:
         mod = importlib.import_module(f"passes.{name}")
         code = mod.run(code)

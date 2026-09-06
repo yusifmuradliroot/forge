@@ -44,3 +44,12 @@
   chain on real code (voyager), never by unit fixtures.
 - FIX: check buf first; flags restricted to dgimsuvy. Lesson: tokenizer lookbehind
   must include unflushed state, and every tokenizer fix gets a torture fixture.
+
+## 2026-09-05 — bootstrap proof (embedded runner == original)
+- Question was how the runner gets embedded safely the FIRST time and how forge
+  verifies it. Answer: --embed checks size cap + must-contain, then the host chain
+  processes it inline. Proof: same .fs through embedded-renamed runner and original
+  runner returned identical results (42=42). No separate bootstrap step needed —
+  the chain IS the bootstrap, differentially verified.
+- Test-design lesson: Function-constructed code returns undefined without explicit
+  `return` (spec) — fixtures for behavior comparison must return values.

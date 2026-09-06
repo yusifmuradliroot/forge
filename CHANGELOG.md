@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [2.2.0]
+- `--embed` guards: size cap + must-contain check (fail loudly)
+- Bootstrap proof: embedded (renamed) runner executes .fs identically to original (42=42)
+
 ## [2.1.0]
 - `--embed FILE`: inline JS at `/*__FORGE_RUNNER__*/` before passes (host stays installable .js)
 
