@@ -1,93 +1,82 @@
 """crypt pass: encrypt long string literals, decode at runtime.
 
-Only plain '...' and "..." literals with length >= MIN_LEN are touched.
+Token-based (shared scanner): ONLY real '...'/"..." string tokens are
+touched. Regex content, comments and template chunks are never scanned --
+a regex like /42\\["(10|34)",.../ used to be shredded because its quotes
+looked like string bounds (silent output corruption).
 Skipped: template literals (may hold ${expr}), short strings (markers, keys),
-strings that look like code or URLs for safety? No — URLs are fine to encrypt,
-they decode identically at runtime. Identifiers are never touched, so loader
-markers (mustContain) always survive.
-A tiny decoder stub is prepended once.
+__-prefixed (loader markers), directives, object-key position.
+A tiny decoder stub is appended after a directive prologue (strict kept).
+Source already using __f aborts loudly.
 """
+
+import re as _re
 
 MIN_LEN = 12
 STUB = ("var __f=function(s){var o='',i=0;for(;i<s.length;i+=2)"
         "{o+=String.fromCharCode(parseInt(s.substr(i,2),16)^0x5A);}return o;};")
+
+try:
+    from scan import tokenize
+except ImportError:
+    import os as _os
+    import sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(__file__), ".."))
+    from scan import tokenize
 
 
 def _xor_hex(s):
     return "".join("%02x" % (ord(ch) ^ 0x5A) for ch in s)
 
 
-def _prev_sig(code, i):
-    i -= 1
-    while i >= 0 and code[i] in " \t\r\n":
-        i -= 1
-    return code[i] if i >= 0 else ""
-
-
-def _next_sig(code, j, n):
-    while j < n and code[j] in " \t\r\n":
-        j += 1
-    return code[j] if j < n else ""
+def _sig_text(toks, idx, direction):
+    """Nearest significant token text in direction (-1/1), skipping comments."""
+    i = idx + direction
+    while 0 <= i < len(toks):
+        kind, text = toks[i]
+        if kind == "comment":
+            i += direction
+            continue
+        return text
+    return ""
 
 
 def run(code: str) -> str:
+    toks = tokenize(code)
     out = []
-    i, n = 0, len(code)
     changed = False
-    while i < n:
-        c = code[i]
-        if c in ("'", '"'):
-            j = i + 1
-            raw = []
-            while j < n:
-                if code[j] == "\\" and j + 1 < n:
-                    raw.append(code[j:j + 2])
-                    j += 2
-                    continue
-                if code[j] == c:
-                    break
-                raw.append(code[j])
-                j += 1
-            if j >= n:
-                out.append(code[i:])
-                break
-            body = "".join(raw)
+    for idx, (kind, text) in enumerate(toks):
+        if kind == "str" and text[:1] in ("'", '"') and len(text) >= 2 and text[-1:] == text[:1]:
+            body = text[1:-1]
             try:
                 value = body.encode().decode("unicode_escape")
             except Exception:
-                out.append(code[i:j + 1])
-                i = j + 1
+                value = None
+            if value is None:
+                out.append(text)
                 continue
             if value.startswith("__"):
-                # loader markers (mustContain) — never touch
-                out.append(code[i:j + 1])
-            elif value in ("use strict", "use asm"):
-                # directives lose meaning when encrypted
-                out.append(code[i:j + 1])
-            elif (_next_sig(code, j + 1, n) == ":"
-                    and _prev_sig(code, i) in ("{", ",")):
-                # object key position {"k": v} — a call expr is invalid there
-                out.append(code[i:j + 1])
-            elif len(value) >= MIN_LEN and all(ord(ch) < 128 for ch in value):
-                out.append("__f(\"" + _xor_hex(value) + "\")")
+                out.append(text)  # loader markers (mustContain) — never touch
+                continue
+            if value in ("use strict", "use asm"):
+                out.append(text)  # directives lose meaning when encrypted
+                continue
+            prev_t = _sig_text(toks, idx, -1).rstrip()
+            next_t = _sig_text(toks, idx, 1).lstrip()
+            if next_t.startswith(":") and prev_t.endswith(("{", ",")):
+                out.append(text)  # object key position — a call is invalid there
+                continue
+            if len(value) >= MIN_LEN and all(ord(ch) < 128 for ch in value):
+                out.append('__f("' + _xor_hex(value) + '")')
                 changed = True
-            else:
-                out.append(code[i:j + 1])
-            i = j + 1
+                continue
+            out.append(text)
         else:
-            out.append(c)
-            i += 1
+            out.append(text)
     result = "".join(out)
     if changed:
-        import re as _re
         if "__f" in set(_re.findall(r"[A-Za-z_$][\w$]*", code)):
-            # L6: source already uses __f with unknown semantics --
-            # refuse loudly instead of silently calling the wrong decoder.
             raise ValueError("crypt: source already uses __f; rename it first")
-        # M1: stub goes AFTER a directive prologue ("use strict" must stay
-        # first to mean anything). Prepending before it silently killed strict.
-        # (Appending at end is wrong too: top-level __f(..) calls would run
-        # before the trailing assignment executes.)
         m = _re.match(
             r"((?:[ \t\r\n;]*(?:\"(?:use strict|use asm)\"|'(?:use strict|use asm)')[ \t]*;?)*)",
             result)

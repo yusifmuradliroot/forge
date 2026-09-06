@@ -29,6 +29,16 @@ assert 'var ForgeScript=' in host, 'RUNNER RENAMED'
 assert len(re.findall(r'(?<![\w\$.])ForgeScript(?![\w\$])', host)) >= 1, 'RUNNER REFS LOST'
 open('/tmp/st_runner.txt','w').write('RUNNER-NAME PASS')" || fail=1
 say "runner name" "$(cat /tmp/st_runner.txt)"
+node --check tests/crypt_regex.js > /dev/null 2>&1 || fail=1
+python3 tools/forge.py tests/crypt_regex.js /tmp/st_cr.js --passes strip,short,crypt --dev > /dev/null 2>&1 || fail=1
+node --check /tmp/st_cr.js > /dev/null 2>&1 || fail=1
+python3 -c "
+import sys; sys.path.insert(0,'src')
+from passes import crypt
+out = open('/tmp/st_cr.js').read()
+assert '/42' in out and '__f(' not in out, 'REGEX EATEN'
+open('/tmp/st_crypt.txt','w').write('CRYPT-REGEX PASS')" || fail=1
+say "crypt regex" "$(cat /tmp/st_crypt.txt)"
 python3 -c "
 import sys; sys.path.insert(0,'src')
 from passes import short

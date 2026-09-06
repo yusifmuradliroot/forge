@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [2.7.2] — crypt was regex-blind (silent corruption)
+- Token-based rewrite: only real string tokens encrypted. A regex like
+  /42\["(10|34)",.../ was shredded (quotes looked like string bounds),
+  killing ws_core outgoing-sid recovery in the shipped 2.9 build.
+- fixtures: tests/crypt_regex.js + selftest gate.
+
 ## [2.7.1] — the exec-killer fix
 - short GLOBALS += ForgeScript: the embedded runner kept being renamed
   (`var n`), while separately-forged files call it by global name. Every .fs
