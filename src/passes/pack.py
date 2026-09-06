@@ -42,6 +42,10 @@ def _shuffle(idx, seed):
 def run(code: str) -> str:
     if code.startswith(TAG + "\n"):
         return code
+    if not code.strip():
+        # L14: an empty input would emit a manifest claiming 3 blobs with
+        # zero blob lines (refused downstream). Abort loudly instead.
+        raise ValueError("pack: empty input")
     data = code.encode("utf-8")
     third = (len(data) + NSEG - 1) // NSEG
     segs = [data[i * third:(i + 1) * third] for i in range(NSEG)]

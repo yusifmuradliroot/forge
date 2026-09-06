@@ -6,16 +6,17 @@ Independent tool — answers to no other repo. Consumers pin a VERSION and adapt
 
 ## Layout
 ```
-src/passes/<name>.py  → strip, short, crypt, pack — each run(code: str) -> str
+src/scan.py + src/poison.py → shared scanner + never-rename names
+src/passes/<name>.py  → nolog, strip, short, crypt, pack — each run(code: str) -> str
 tools/forge.py        → CLI: .fs chain, --dev, --embed (guards), --host (userscript)
 tests/                → fixtures per pass + real-file verification
 docs/                 → FORMAT.md (.fs spec), ANALYSIS.md (deep review)
 VERSION               → single version for the whole tool
 ```
 
-## Pipeline order (v2.3.0)
-strip → short → crypt → pack. Clean first, rename second, encrypt third
-(encrypted blobs must not be renamed), pack always last.
+## Pipeline order (v2.6.0)
+nolog → strip → short → crypt → pack. Logs first (needs comments for keep-log),
+clean second, rename third, encrypt fourth (blobs must not be renamed), pack last.
 Host mode (--host): header preserved, embed first, pack rejected.
 
 ## Embedding pattern (for consumers)

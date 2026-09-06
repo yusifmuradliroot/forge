@@ -16,6 +16,15 @@ fails = []
 def main():
     if not (ROOT / "VERSION").is_file():
         fails.append("missing VERSION file")
+    else:
+        # M4: release-checklist rule -- every bump ships README + CHANGELOG.
+        ver = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
+        for doc in ("README.md", "CHANGELOG.md"):
+            try:
+                if ver not in (ROOT / doc).read_text(encoding="utf-8"):
+                    fails.append(f"{doc} does not mention VERSION {ver} (docs ride with the bump)")
+            except Exception as e:
+                fails.append(f"{doc} unreadable: {e}")
     runner = ROOT / "src" / "runner" / "forgescript.js"
     if not runner.is_file():
         fails.append("missing src/runner/forgescript.js")
@@ -65,6 +74,14 @@ def main():
                     blobs = [b for b in lines[2:] if b]
                     if len(blobs) != 3 or sorted(m.get("o", [])) != [0, 1, 2] or not m.get("s"):
                         fails.append("pack: bad manifest (want 3 blobs, order perm of 0..2, sig)")
+                    else:
+                        # M2: verify the signature itself (shape-only checks let
+                        # sig regressions ship green -- the inverse-order saga).
+                        ordered = [blobs[i] for i in m["o"]]
+                        want = "%08x" % fnv1a(("FS:2\n" + ",".join(map(str, m["o"]))
+                                                    + "\n" + "".join(ordered)).encode())
+                        if want != m["s"]:
+                            fails.append("pack: signature does not verify")
                 except Exception as e:
                     fails.append(f"pack: manifest invalid: {e}")
     if fails:

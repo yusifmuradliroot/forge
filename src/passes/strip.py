@@ -1,37 +1,17 @@
-"""strip pass: remove // and /* */ comments, string-aware."""
+"""strip pass: remove // and /* */ comments via the shared scanner.
+Regex/str/template-aware (H1: a regex like /\\// no longer eats trailing code).
+Output for comment-free inputs is byte-identical to input."""
+
+try:
+    from scan import tokenize
+except ImportError:
+    import os as _os
+    import sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(__file__), ".."))
+    from scan import tokenize
+
+
 
 
 def run(code: str) -> str:
-    out = []
-    i, n = 0, len(code)
-    while i < n:
-        c = code[i]
-        nxt = code[i + 1] if i + 1 < n else ""
-        if c in ("'", '"', "`"):
-            quote = c
-            out.append(c)
-            i += 1
-            while i < n:
-                ch = code[i]
-                out.append(ch)
-                if ch == "\\":
-                    if i + 1 < n:
-                        out.append(code[i + 1])
-                        i += 2
-                        continue
-                if ch == quote:
-                    i += 1
-                    break
-                i += 1
-        elif c == "/" and nxt == "/":
-            while i < n and code[i] != "\n":
-                i += 1
-        elif c == "/" and nxt == "*":
-            i += 2
-            while i + 1 < n and not (code[i] == "*" and code[i + 1] == "/"):
-                i += 1
-            i += 2
-        else:
-            out.append(c)
-            i += 1
-    return "".join(out)
+    return "".join(text for kind, text in tokenize(code) if kind != "comment")

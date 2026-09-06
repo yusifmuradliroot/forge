@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## [2.6.0] — deep-audit fixes (see ai-reports/2026-09-06-deep-audit-v2.5.0.md)
+- CRITICAL runner v4: concat-then-decode (per-segment TextDecoder corrupted
+  split multibyte chars, invisibly). Multibyte battery (all 6 orders).
+- HIGH short: never rename destructured/shorthand/method/BigInt-suffix names
+  (src/poison.py). Regression probes in selftest.
+- HIGH strip: regex-aware via shared src/scan.py (escaped-slash truncation).
+- nolog rebuilt on scan tokens (comment/regex/template-correct).
+- MEDIUM crypt: stub after directive prologue (strict kept); __f collision aborts.
+- MEDIUM check.py verifies the pack signature (was shape-only).
+- MEDIUM docs: LIMITS.md (honest trust model), ANALYSIS stubbed, README current.
+- check.py enforces docs-ride-with-bump; forge.py --version, clean pass errors.
+- tests/selftest.sh: one-command battery (check + runner + e2e + probes).
+
 ## [2.5.0]
 - `nolog` pass: strips console.* statements (keep-log lines survive)
 

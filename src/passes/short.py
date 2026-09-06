@@ -7,6 +7,17 @@ Conservative by design — a name is renamed ONLY if ALL hold:
 Everything else is left untouched. Strings, comments, regex, templates are opaque.
 """
 
+try:
+    from scan import tokenize, _regex_allowed, KEYWORDS_BEFORE_REGEX, build_mask
+    from poison import find_poison
+except ImportError:
+    import os as _os
+    import sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(__file__), ".."))
+    from scan import tokenize, _regex_allowed, KEYWORDS_BEFORE_REGEX, build_mask
+    from poison import find_poison
+
+
 import re
 
 RESERVED = set("""
@@ -30,180 +41,6 @@ Function eval isNaN isFinite parseInt parseFloat encodeURI decodeURI
 encodeURIComponent decodeURIComponent escape unescape
 """.split())
 
-
-def tokenize(code):
-    """Yield (kind, text) with kind in ident/str/regex/comment/other."""
-    toks = []
-    i, n = 0, len(code)
-    buf = []
-    def flush():
-        if buf:
-            toks.append(("other", "".join(buf)))
-            del buf[:]
-    while i < n:
-        c = code[i]
-        nxt = code[i + 1] if i + 1 < n else ""
-        if c in ("'", '"'):
-            flush()
-            j = i + 1
-            while j < n:
-                if code[j] == "\\":
-                    j += 2
-                    continue
-                if code[j] == c:
-                    j += 1
-                    break
-                j += 1
-            toks.append(("str", code[i:j]))
-            i = j
-        elif c == "`":
-            flush()
-            j = i + 1
-            seg_start = i
-            closed = False
-            while j < n:
-                if code[j] == "\\":
-                    j += 2
-                    continue
-                if code[j] == "`":
-                    toks.append(("str", code[seg_start:j + 1]))
-                    j += 1
-                    closed = True
-                    break
-                if code[j] == "$" and j + 1 < n and code[j + 1] == "{":
-                    toks.append(("str", code[seg_start:j]))
-                    k = j + 2
-                    d = 1
-                    while k < n and d:
-                        if code[k] == "\\":
-                            k += 2
-                            continue
-                        if code[k] in ("'", '"'):
-                            q = code[k]
-                            k += 1
-                            while k < n and code[k] != q:
-                                k += 2 if code[k] == "\\" else 1
-                            k += 1
-                            continue
-                        if code[k] == "`":
-                            # nested template inside ${}: skip over it silently.
-                            # (The recursive tokenize() below re-processes this span;
-                            # emitting here would duplicate tokens.)
-                            m = k + 1
-                            tdepth = 0
-                            while m < n:
-                                if code[m] == "\\":
-                                    m += 2
-                                    continue
-                                if code[m] == "`" and tdepth == 0:
-                                    m += 1
-                                    break
-                                if code[m] == "$" and m + 1 < n and code[m + 1] == "{":
-                                    tdepth += 1
-                                    m += 2
-                                    continue
-                                if code[m] == "}" and tdepth > 0:
-                                    tdepth -= 1
-                                m += 1
-                            k = m
-                            continue
-                        if code[k] == "{":
-                            d += 1
-                        elif code[k] == "}":
-                            d -= 1
-                        k += 1
-                    toks.append(("other", "${"))
-                    for t in tokenize(code[j + 2:k - 1]):
-                        toks.append(t)
-                    toks.append(("other", "}"))
-                    j = k
-                    seg_start = k
-                    continue
-                j += 1
-            if not closed:
-                toks.append(("str", code[seg_start:j]))
-            i = j
-        elif c == "/" and nxt == "/":
-            flush()
-            j = code.find("\n", i)
-            j = n if j == -1 else j
-            toks.append(("comment", code[i:j]))
-            i = j
-        elif c == "/" and nxt == "*":
-            flush()
-            j = code.find("*/", i + 2)
-            j = n if j == -1 else j + 2
-            toks.append(("comment", code[i:j]))
-            i = j
-        elif c == "/" and _regex_allowed(toks, buf):
-            flush()
-            j = i + 1
-            in_class = False
-            while j < n:
-                if code[j] == "\\":
-                    j += 2
-                    continue
-                if code[j] == "[":
-                    in_class = True
-                elif code[j] == "]":
-                    in_class = False
-                elif code[j] == "/" and not in_class:
-                    j += 1
-                    while j < n and code[j] in "dgimsuvy":
-                        j += 1
-                    break
-                elif code[j] == "\n":
-                    break
-                j += 1
-            toks.append(("regex", code[i:j]))
-            i = j
-        elif c.isalpha() or c == "_" or c == "$":
-            flush()
-            j = i + 1
-            while j < n and (code[j].isalnum() or code[j] in "_$"):
-                j += 1
-            toks.append(("ident", code[i:j]))
-            i = j
-        else:
-            buf.append(c)
-            i += 1
-    flush()
-    return toks
-
-
-KEYWORDS_BEFORE_REGEX = ("return", "typeof", "in", "of", "new", "delete",
-                             "void", "throw", "case", "do", "else", "yield", "await")
-
-
-def _regex_allowed(toks, buf=None):
-    # NOTE: the pending buf (unflushed "other" chars) must be consulted FIRST:
-    # e.g. in `replace(/x/g)` the "(" sits in buf, not in toks yet.
-    if buf:
-        s = "".join(buf).rstrip()
-        if s:
-            ch = s[-1]
-            if ch == ")" or ch == "]":
-                return False
-            if ch.isalnum() or ch in "_$":
-                j = len(s) - 1
-                while j >= 0 and (s[j].isalnum() or s[j] in "_$"):
-                    j -= 1
-                return s[j + 1:] in KEYWORDS_BEFORE_REGEX
-            return True
-    for kind, text in reversed(toks):
-        if kind in ("str", "regex", "comment"):
-            return False
-        if kind == "ident":
-            return text in KEYWORDS_BEFORE_REGEX
-        if kind == "other":
-            s = text.rstrip()
-            if not s:
-                continue
-            ch = s[-1]
-            if ch.isalnum() or ch in "_$)]}'\"`":
-                return False
-            return True
-    return True
 
 
 def _prev_ident(toks, idx):
@@ -332,11 +169,17 @@ def run(code: str) -> str:
                             break
         ti += 1
 
+    try:
+        poisoned = find_poison(code)
+    except Exception:
+        poisoned = set()
     candidates = {}
     for name, sites in decls.items():
         if len(sites) != 1:
             continue
         if name in RESERVED or name in GLOBALS or len(name) < 1:
+            continue
+        if name in poisoned:
             continue
         bad = False
         for kk, tt in idents:

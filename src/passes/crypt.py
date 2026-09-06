@@ -78,6 +78,20 @@ def run(code: str) -> str:
             out.append(c)
             i += 1
     result = "".join(out)
-    if changed and "__f=function" not in result:
-        result = STUB + result
+    if changed:
+        import re as _re
+        if "__f" in set(_re.findall(r"[A-Za-z_$][\w$]*", code)):
+            # L6: source already uses __f with unknown semantics --
+            # refuse loudly instead of silently calling the wrong decoder.
+            raise ValueError("crypt: source already uses __f; rename it first")
+        # M1: stub goes AFTER a directive prologue ("use strict" must stay
+        # first to mean anything). Prepending before it silently killed strict.
+        # (Appending at end is wrong too: top-level __f(..) calls would run
+        # before the trailing assignment executes.)
+        m = _re.match(
+            r"((?:[ \t\r\n;]*(?:\"(?:use strict|use asm)\"|'(?:use strict|use asm)')[ \t]*;?)*)",
+            result)
+        cut = m.end(1)
+        glue = ";" if cut and (cut >= len(result) or result[cut] not in ";\n") else ""
+        result = result[:cut] + glue + STUB + result[cut:]
     return result

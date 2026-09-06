@@ -1,0 +1,43 @@
+#!/bin/bash
+# forge selftest (L13): one command runs the whole battery. Exit 0 = green.
+# Usage: bash tests/selftest.sh
+set -u
+cd "$(dirname "$0")/.." || exit 1
+fail=0
+say() { printf '%-28s %s\n' "$1" "$2"; }
+python3 tools/check.py > /tmp/st_check.txt 2>&1 || fail=1
+say "check.py" "$(tail -1 /tmp/st_check.txt)"
+node tests/check_runner.js > /tmp/st_run.txt 2>&1 || fail=1
+say "runner battery" "$(tail -1 /tmp/st_run.txt)"
+python3 tools/forge.py tests/e2e.js /tmp/st_e2e.fs > /dev/null 2>&1 || fail=1
+node -e "
+const fs=require('fs');
+eval(fs.readFileSync('src/runner/forgescript.js','utf8'));
+const logs=[]; const o=console.log; console.log=(...a)=>logs.push(a.join(' '));
+ForgeScript.run(fs.readFileSync('/tmp/st_e2e.fs','utf8'));
+console.log=o;
+if (logs[0]!=='hello packed world, this is a longer string 42') { console.log('E2E MISMATCH'); process.exit(1); }
+console.log('E2E IDENTICAL');
+" > /tmp/st_e2e.txt 2>&1 || fail=1
+say "e2e chain" "$(tail -1 /tmp/st_e2e.txt)"
+python3 -c "
+import sys; sys.path.insert(0,'src')
+from passes import short
+# H2/H3/H4 regression probes: property positions must survive
+probes = [
+  ('const a1 = 1; const {b1} = o; f(a1, b1);', ['{b1}']),
+  ('const a2 = 1; f({a2});', ['{a2}']),
+  ('const a3 = 1; var n = 5n; g(a3, n);', ['5n']),
+  ('const a4 = 1; var o = {m4() { return a4; }};', ['m4()']),
+  ('function h({p5}, [q5], r5) { return r5; }', ['{p5}', '[q5]']),
+]
+bad = 0
+for src, keeps in probes:
+    out = short.run(src)
+    for k in keeps:
+        if k not in out: bad += 1; print('PROBE-FAIL', src, '->', out)
+open('/tmp/st_probe.txt','w').write('PROBES ' + ('PASS' if bad == 0 else f'FAIL({bad})'))
+" || fail=1
+say "short probes" "$(cat /tmp/st_probe.txt)"
+[ $fail -eq 0 ] && echo "SELFTEST GREEN" || echo "SELFTEST RED"
+exit $fail
