@@ -7,15 +7,16 @@ Independent tool — answers to no other repo. Consumers pin a VERSION and adapt
 ## Layout
 ```
 src/passes/<name>.py  → strip, short, crypt, pack — each run(code: str) -> str
-tools/forge.py        → CLI: forge.py in.js out.js --passes strip,short,crypt,pack
+tools/forge.py        → CLI: .fs chain, --dev, --embed (guards), --host (userscript)
 tests/                → fixtures per pass + real-file verification
-docs/                 → design docs (pending)
+docs/                 → FORMAT.md (.fs spec), ANALYSIS.md (deep review)
 VERSION               → single version for the whole tool
 ```
 
-## Pipeline order (v2.0.0)
+## Pipeline order (v2.3.0)
 strip → short → crypt → pack. Clean first, rename second, encrypt third
 (encrypted blobs must not be renamed), pack always last.
+Host mode (--host): header preserved, embed first, pack rejected.
 
 ## Embedding pattern (for consumers)
 Host loads `src/runner/forgescript.js` once, feeds it `.fs` payloads via
