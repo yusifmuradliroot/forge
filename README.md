@@ -46,7 +46,6 @@ src/runner/   → forgescript.js — the runner (plain JS, runs ONLY FS:2 .fs)
 tools/        → forge.py (translator CLI), check.py (integrity checker)
 tests/        → fixtures + check_runner.js (runner battery)
 docs/         → FORMAT.md (.fs spec), LIMITS.md (honest limits), ANALYSIS.md (v1 history)
-archive/      → retired readers (FS:1 era), read-only
 ```
 
 ## Version

@@ -24,7 +24,7 @@
 - `nolog` pass: strips console.* statements (keep-log lines survive)
 
 ## [2.4.0]
-- FS:1 support REMOVED: runner v3 refuses unsigned legacy payloads (last reader in `archive/fs1-era/`)
+- FS:1 support REMOVED: runner v3 refuses unsigned legacy payloads (era archive since removed)
 - Voyager gate already FS:2-only; rebuild hosts to carry runner v3
 
 ## [2.3.0]

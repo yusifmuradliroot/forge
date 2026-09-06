@@ -9,7 +9,7 @@ strip → short → crypt → pack (FS:2). Open-source release possible later.
 - v2.6.0: deep-audit fixes — runner v4 (multibyte), poison (short), scan-shared
   strip/nolog, crypt strict-safe, sig-verifying checker, LIMITS.md, selftest.sh.
 - v2.5.0: `nolog` pass (console.* stripped, keep-log survives) for silent public builds.
-- v2.4.0: FS:1 REMOVED (runner v3, FS:2-only). FS:1-era runner archived at `archive/fs1-era/`.
+- v2.4.0: FS:1 REMOVED (runner v3, FS:2-only). FS:1-era archive since removed.
 - v2.3.0: full pipeline (strip, short, crypt, pack FS:2 signed) + runner v2.
   --dev mode, --embed (guards + bootstrap proof), --host (userscript mode).
   Regex/division tokenizer fix + torture fixture. Bug-hunt battery green.

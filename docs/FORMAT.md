@@ -26,7 +26,7 @@ FS:2
 
 ## FS:1 (removed in forge 2.4.0)
 Single XOR-hex blob after the tag. Runner REFUSES it since runner v3.
-Last FS:1-capable runner archived at `archive/fs1-era/`. Never emitted since 2.0.
+Never emitted since 2.0.
 
 ## Reserved
 `FS:3` = chunked execution (never full plaintext in memory — needs a scope-aware

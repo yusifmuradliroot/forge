@@ -41,5 +41,5 @@ A layer OVER JavaScript: output runs anywhere JS runs, no installs, no native bu
 ## Payload contract
 - `.fs` is PURE DATA (never carries its own loader): tag line + encrypted payload.
 - Loaders holding markers inside blobs must unpack-first or tag-check before scanning.
-- Format: FS:2 only since 2.4.0 (segments, keys, signature). FS:1 removed; last reader in `archive/fs1-era/`.
+- Format: FS:2 only since 2.4.0 (segments, keys, signature). FS:1 removed (era archive since removed).
   Reserved: FS:3 chunked execution (needs a scope-aware splitter).
