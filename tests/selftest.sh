@@ -21,6 +21,15 @@ console.log('E2E IDENTICAL');
 " > /tmp/st_e2e.txt 2>&1 || fail=1
 say "e2e chain" "$(tail -1 /tmp/st_e2e.txt)"
 python3 -c "
+import sys, re; sys.path.insert(0,'src')
+from passes import short, strip
+# cross-file contract: embedded runner name must survive for other files
+host = short.run(strip.run('/*__FORGE_RUNNER__*/'.replace('/*__FORGE_RUNNER__*/', open('src/runner/forgescript.js').read())))
+assert 'var ForgeScript=' in host, 'RUNNER RENAMED'
+assert len(re.findall(r'(?<![\w\$.])ForgeScript(?![\w\$])', host)) >= 1, 'RUNNER REFS LOST'
+open('/tmp/st_runner.txt','w').write('RUNNER-NAME PASS')" || fail=1
+say "runner name" "$(cat /tmp/st_runner.txt)"
+python3 -c "
 import sys; sys.path.insert(0,'src')
 from passes import short
 # H2/H3/H4 regression probes: property positions must survive

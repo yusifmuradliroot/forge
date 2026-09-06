@@ -5,6 +5,7 @@ JS protection layer, general purpose and independent. Pipeline v2:
 strip → short → crypt → pack (FS:2). Open-source release possible later.
 
 ## Done
+- v2.7.1: ForgeScript kept global (runner rename broke ALL .fs plugin loads).
 - v2.7.0: `--audit` approval gate (risk report pre-build, keep-log marked KEPT).
 - v2.6.0: deep-audit fixes — runner v4 (multibyte), poison (short), scan-shared
   strip/nolog, crypt strict-safe, sig-verifying checker, LIMITS.md, selftest.sh.

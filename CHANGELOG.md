@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## [2.7.1] — the exec-killer fix
+- short GLOBALS += ForgeScript: the embedded runner kept being renamed
+  (`var n`), while separately-forged files call it by global name. Every .fs
+  plugin load since the .fs era failed on this. Regression test in selftest.
+
 ## [2.7.0]
 - `--audit` gate: reports risky constructs (console/debugger/eval/sinks) in raw
   source with line numbers, builds only on approval (`--yes` to skip prompt).

@@ -3,7 +3,9 @@
 Conservative by design — a name is renamed ONLY if ALL hold:
 - declared exactly once in the file (var/let/const/function/param/catch),
 - never used as a property (obj.NAME), object key (NAME:), or after `new`,
-- not a known global / reserved word.
+- not a known global / reserved word. (GLOBALS also covers cross-file
+  contract names like ForgeScript: the runner is embedded in one file and
+  called by name from separately-forged files, so renaming it breaks them.)
 Everything else is left untouched. Strings, comments, regex, templates are opaque.
 """
 
@@ -30,6 +32,7 @@ XMLHttpRequest WebSocket Worker setTimeout clearTimeout setInterval clearInterva
 setImmediate clearImmediate requestAnimationFrame cancelAnimationFrame fetch
 localStorage sessionStorage crypto performance alert confirm prompt open close
 unsafeWindow GM_getValue GM_setValue GM_xmlhttpRequest GM_info GM
+ForgeScript
 Function eval isNaN isFinite parseInt parseFloat encodeURI decodeURI
 encodeURIComponent decodeURIComponent escape unescape
 """.split())

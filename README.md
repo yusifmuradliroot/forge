@@ -1,7 +1,7 @@
 # forge
 
 JS protection layer: raw JS in → `.fs` data file out, executed by the forgescript runner.
-Private. Minimal by design. Current: 2.7.0 (`FS:2` segmented format, runner v4).
+Private. Minimal by design. Current: 2.7.1 (`FS:2` segmented format, runner v4).
 
 > Trust model (read first): the `.fs` signature proves the file was not
 > ACCIDENTALLY damaged. It proves NOTHING about who made it — the format,
