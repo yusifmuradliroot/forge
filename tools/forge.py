@@ -31,6 +31,9 @@ def main():
                     help="reject embed source larger than this (bytes)")
     ap.add_argument("--embed-has", default="",
                     help="embed source must contain this string (e.g. ForgeScript)")
+    ap.add_argument("--host", action="store_true",
+                    help="userscript host mode: preserve ==UserScript== header, "
+                         "process body only (pack rejected in this mode)")
     args = ap.parse_args()
 
     names = [p.strip() for p in args.passes.split(",") if p.strip()]
@@ -40,6 +43,19 @@ def main():
         names = [p for p in names if p != "pack"] + ["pack"]
 
     code = Path(args.src).read_text(encoding="utf-8")
+    header = ""
+    if args.host:
+        lines = code.split("\n")
+        try:
+            end = next(i for i, l in enumerate(lines) if "==/UserScript==" in l)
+        except StopIteration:
+            print("host mode needs a ==UserScript== header block, aborting")
+            return 1
+        header = "\n".join(lines[:end + 1]) + "\n"
+        code = "\n".join(lines[end + 1:])
+        if "pack" in names:
+            print("pack rejected in host mode (output must stay installable .js)")
+            return 1
     if args.embed:
         raw_snippet = Path(args.embed).read_text(encoding="utf-8")
         if len(raw_snippet.encode("utf-8")) > args.embed_max:
@@ -58,7 +74,7 @@ def main():
         mod = importlib.import_module(f"passes.{name}")
         code = mod.run(code)
         print(f"pass applied: {name} ({len(code)} chars)")
-    Path(args.dst).write_text(code, encoding="utf-8")
+    Path(args.dst).write_text(header + code, encoding="utf-8")
     print(f"wrote {args.dst}")
     return 0
 

@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+## [2.3.0]
+- `--host` mode: userscript hosts (header preserved, pack rejected, single command)
+
 ## [2.2.0]
 - `--embed` guards: size cap + must-contain check (fail loudly)
 - Bootstrap proof: embedded (renamed) runner executes .fs identically to original (42=42)
