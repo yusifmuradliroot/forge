@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+## [2.1.0]
+- `--embed FILE`: inline JS at `/*__FORGE_RUNNER__*/` before passes (host stays installable .js)
+
 ## [2.0.1]
 - short: regex detection consults pending buffer (fixes `/x/g` flag eaten after `(`)
 - short: regex flags limited to known set (dgimsuvy)

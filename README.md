@@ -14,6 +14,7 @@ in.js ──► strip ──► short ──► crypt ──► pack ──► o
 ```bash
 python3 tools/forge.py in.js out.fs          # full chain
 python3 tools/forge.py in.js out.js --dev    # developer mode: readable, no pack
+python3 tools/forge.py host.js out.js --passes strip,short,crypt --embed runner.js
 python3 tools/check.py                       # integrity checker
 ```
 
