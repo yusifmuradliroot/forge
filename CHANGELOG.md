@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## [2.7.0]
+- `--audit` gate: reports risky constructs (console/debugger/eval/sinks) in raw
+  source with line numbers, builds only on approval (`--yes` to skip prompt).
+  keep-log lines shown as KEPT. Catches what eyes miss before it ships.
+
 ## [2.6.0] — deep-audit fixes (see ai-reports/2026-09-06-deep-audit-v2.5.0.md)
 - CRITICAL runner v4: concat-then-decode (per-segment TextDecoder corrupted
   split multibyte chars, invisibly). Multibyte battery (all 6 orders).

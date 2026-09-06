@@ -36,6 +36,11 @@ def main():
                          "process body only (pack rejected in this mode)")
     ap.add_argument("--version", action="store_true",
                     help="print forge VERSION and exit")
+    ap.add_argument("--audit", action="store_true",
+                    help="report risky constructs (console/debugger/eval/sinks) "
+                         "in the raw source and ask approval before building")
+    ap.add_argument("--yes", action="store_true",
+                    help="with --audit: print the report but skip the prompt")
     args = ap.parse_args()
 
     if args.version:
@@ -51,6 +56,18 @@ def main():
         names = [p for p in names if p != "pack"] + ["pack"]
 
     code = Path(args.src).read_text(encoding="utf-8")
+    if args.audit:
+        # Audit the RAW input (line numbers match the file you review).
+        from audit import report as audit_report
+        print(audit_report(code))
+        if not args.yes:
+            try:
+                ans = input("forge audit: build anyway? [y/N] ").strip().lower()
+            except EOFError:
+                ans = ""
+            if ans not in ("y", "yes"):
+                print("aborted by audit (no output written)")
+                return 1
     header = ""
     if args.host:
         lines = code.split("\n")

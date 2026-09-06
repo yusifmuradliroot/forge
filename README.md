@@ -1,7 +1,7 @@
 # forge
 
 JS protection layer: raw JS in → `.fs` data file out, executed by the forgescript runner.
-Private. Minimal by design. Current: 2.6.0 (`FS:2` segmented format, runner v4).
+Private. Minimal by design. Current: 2.7.0 (`FS:2` segmented format, runner v4).
 
 > Trust model (read first): the `.fs` signature proves the file was not
 > ACCIDENTALLY damaged. It proves NOTHING about who made it — the format,
@@ -27,6 +27,7 @@ python3 tools/forge.py in.js out.fs          # full chain
 python3 tools/forge.py in.js out.js --dev    # developer mode: readable, no pack
 python3 tools/forge.py host.js out.js --passes nolog,strip,short,crypt --embed runner.js --embed-has ForgeScript --host
 python3 tools/check.py                       # integrity checker (incl. sig verify)
+python3 tools/forge.py in.js out.fs --audit  # report risks, build on approval
 node tests/check_runner.js                   # runner battery (multibyte + refusals)
 ```
 
