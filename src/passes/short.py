@@ -135,7 +135,7 @@ def tokenize(code):
             j = n if j == -1 else j + 2
             toks.append(("comment", code[i:j]))
             i = j
-        elif c == "/" and _regex_allowed(toks):
+        elif c == "/" and _regex_allowed(toks, buf):
             flush()
             j = i + 1
             in_class = False
@@ -149,7 +149,7 @@ def tokenize(code):
                     in_class = False
                 elif code[j] == "/" and not in_class:
                     j += 1
-                    while j < n and code[j].isalpha():
+                    while j < n and code[j] in "dgimsuvy":
                         j += 1
                     break
                 elif code[j] == "\n":
@@ -171,13 +171,30 @@ def tokenize(code):
     return toks
 
 
-def _regex_allowed(toks):
+KEYWORDS_BEFORE_REGEX = ("return", "typeof", "in", "of", "new", "delete",
+                             "void", "throw", "case", "do", "else", "yield", "await")
+
+
+def _regex_allowed(toks, buf=None):
+    # NOTE: the pending buf (unflushed "other" chars) must be consulted FIRST:
+    # e.g. in `replace(/x/g)` the "(" sits in buf, not in toks yet.
+    if buf:
+        s = "".join(buf).rstrip()
+        if s:
+            ch = s[-1]
+            if ch == ")" or ch == "]":
+                return False
+            if ch.isalnum() or ch in "_$":
+                j = len(s) - 1
+                while j >= 0 and (s[j].isalnum() or s[j] in "_$"):
+                    j -= 1
+                return s[j + 1:] in KEYWORDS_BEFORE_REGEX
+            return True
     for kind, text in reversed(toks):
         if kind in ("str", "regex", "comment"):
             return False
         if kind == "ident":
-            return text in ("return", "typeof", "in", "of", "new", "delete",
-                            "void", "throw", "case", "do", "else", "yield", "await")
+            return text in KEYWORDS_BEFORE_REGEX
         if kind == "other":
             s = text.rstrip()
             if not s:

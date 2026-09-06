@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## [2.0.1]
+- short: regex detection consults pending buffer (fixes `/x/g` flag eaten after `(`)
+- short: regex flags limited to known set (dgimsuvy)
+- tests/regex.js torture fixture
+
 ## [2.0.0]
 - FS:2: 3 shuffled segments, per-segment keys, base64, FNV-1a integrity signature
 - Runner v2: FS:1+FS:2, verify-before-decrypt, bounds checks, wipe-after-run

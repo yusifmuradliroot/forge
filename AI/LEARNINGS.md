@@ -36,3 +36,11 @@
 - Approves fast ("ekle", "yaz", "evet", "devam") — execute immediately.
 - Strategic calls stay with user; max 2-3 options, recommend one.
 - When torn between designs, STOP and discuss (explicit user instruction).
+
+## 2026-09-05 — regex/division disambiguation needs the pending buffer
+- short.py treated `/` after `(` as division because `(` sat in the unflushed buf,
+  invisible to the check. `replace(/\s+/g)` became `replace(/\s+/ah)` (flag eaten
+  as identifier) → invalid regex in forged output. Caught only by running the FULL
+  chain on real code (voyager), never by unit fixtures.
+- FIX: check buf first; flags restricted to dgimsuvy. Lesson: tokenizer lookbehind
+  must include unflushed state, and every tokenizer fix gets a torture fixture.
