@@ -1,4 +1,4 @@
-# .fs format — FS:2 (current) and FS:1 (legacy, read-only)
+# .fs format — FS:2 (only)
 
 A `.fs` file is PURE DATA. No loader, no code outside the payload.
 
@@ -21,8 +21,9 @@ FS:2
 - Unknown tag, bad JSON, missing/short/long blobs, bad indices, bad base64,
   bad UTF-8, bad sig → refuse (null). No exceptions escape except payload errors.
 
-## FS:1 (legacy)
-Single XOR-hex blob after the tag. Runner still reads it. Never emitted anymore.
+## FS:1 (removed in forge 2.4.0)
+Single XOR-hex blob after the tag. Runner REFUSES it since runner v3.
+Last FS:1-capable runner archived at `archive/fs1-era/`. Never emitted since 2.0.
 
 ## Reserved
 `FS:3` = chunked execution (never full plaintext in memory — needs a scope-aware

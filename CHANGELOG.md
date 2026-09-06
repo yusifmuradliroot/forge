@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [2.4.0]
+- FS:1 support REMOVED: runner v3 refuses unsigned legacy payloads (last reader in `archive/fs1-era/`)
+- Voyager gate already FS:2-only; rebuild hosts to carry runner v3
+
 ## [2.3.0]
 - `--host` mode: userscript hosts (header preserved, pack rejected, single command)
 

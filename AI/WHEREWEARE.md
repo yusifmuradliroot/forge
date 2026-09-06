@@ -5,6 +5,7 @@ JS protection layer, general purpose and independent. Pipeline v2:
 strip → short → crypt → pack (FS:2). Open-source release possible later.
 
 ## Done
+- v2.4.0: FS:1 REMOVED (runner v3, FS:2-only). FS:1-era runner archived at `archive/fs1-era/`.
 - v2.3.0: full pipeline (strip, short, crypt, pack FS:2 signed) + runner v2.
   --dev mode, --embed (guards + bootstrap proof), --host (userscript mode).
   Regex/division tokenizer fix + torture fixture. Bug-hunt battery green.

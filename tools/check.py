@@ -21,9 +21,11 @@ def main():
         fails.append("missing src/runner/forgescript.js")
     else:
         src = runner.read_text(encoding="utf-8")
-        for keep in ("ForgeScript", "FS:1", "FS:2", "Function", "TextDecoder"):
+        for keep in ("ForgeScript", "FS:2", "Function", "TextDecoder"):
             if keep not in src:
                 fails.append(f"runner missing {keep!r}")
+        if "FS:1" in src:
+            fails.append("runner still accepts FS:1 (removed in 2.4.0)")
         if "://" in src or "/*" in src:
             fails.append("runner must be note-free")
     passes = sorted(p.stem for p in (ROOT / "src" / "passes").glob("*.py")
