@@ -97,3 +97,14 @@
   was compared against the PRE-chain file. crypt legitimately grows size (hex).
   Correct check: decode === --dev output (same stage). It matched byte-exact.
 - Lesson: differential tests must pin the EXACT stage on both sides.
+
+## 2026-09-08 — public-ready packaging without publishing
+- User asked to make forge ready for strangers but KEEP the repo private.
+  Did everything reversible now (wrapper, tutorial, docs, cleanup); deferred
+  the two irreversible-at-publish items: LICENSE swap (early swap grants
+  rights) and AI//ai-reports//AGENTS.md removal (deletes working memory).
+- Tutorial trap: nolog strips console.* by default, so a naive hello-world
+  example prints NOTHING. examples/hello.js uses `// keep-log` — teaches
+  the exemption and the default in one stroke.
+- check.py M4 (docs ride with the bump) caught nothing here because README
+  + CHANGELOG were updated alongside VERSION 2.11.2 in the same change.

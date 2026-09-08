@@ -6,6 +6,13 @@ nolog → strip → short → num → flow → simp → uni → crypt → pack (
 Open-source release possible later.
 
 ## Done
+- v2.11.2 public-ready packaging (builds byte-identical): ./forge wrapper,
+  examples/hello.js + 5-min QUICKSTART, CONTRIBUTING.md, check.py --help,
+  selftest tmp cleanup, simp import tidy, runner v5 docs, CI badge.
+  Repo STAYS private: LICENSE swap + AI//ai-reports/ removal deferred to
+  publish moment.
+- v2.11.1: FORGE_KEEP reserved strings (uni/crypt) — voyager hash slot
+  ('........') survived uni; selftest KEEP probe.
 - v2.11.0 "golden gate era": safe-max batch 1 — flow pass, crypt string
   table + seeded stub, short param-scanner fix + N1 scope prototype
   (FORGE_SCOPE flag), --gate flag, windows CI, flow/scope/gate probes.

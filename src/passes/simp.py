@@ -12,6 +12,7 @@ Runs to fixpoint (max 5 rounds) so nesting collapses too.
 """
 
 import bisect
+import re
 
 from scan import tokenize
 
@@ -48,7 +49,6 @@ def _is_code_pos(toks, idx):
 
 
 def run(code: str) -> str:
-    import re
     # Pass 1: true/false (token-local, no structure needed).
     toks = tokenize(code)
     out = []
@@ -71,7 +71,6 @@ _NUMOP = None
 
 
 def _fold_once(code):
-    import re
     toks = tokenize(code)
     n = len(toks)
 

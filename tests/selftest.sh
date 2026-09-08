@@ -3,6 +3,7 @@
 # Usage: bash tests/selftest.sh
 set -u
 cd "$(dirname "$0")/.." || exit 1
+trap 'rm -f /tmp/st_*.txt /tmp/st_*.fs /tmp/st_*.js /tmp/st_host* /tmp/st_scope* /tmp/st_gate* /tmp/st_keep*' EXIT
 fail=0
 say() { printf '%-28s %s\n' "$1" "$2"; }
 python3 tools/check.py > /tmp/st_check.txt 2>&1 || fail=1

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## [2.11.2] — public-ready packaging (no behavior change to builds)
+- `./forge` command wrapper (repo root; same as `python3 tools/forge.py`).
+- `examples/hello.js` + 5-minute QUICKSTART (build → run → dev → guards).
+- `CONTRIBUTING.md` (pass contract, battery-green rule).
+- `check.py --help` prints usage instead of running the suite.
+- `selftest.sh` cleans its `/tmp/st_*` files on exit.
+- `simp.py`: `import re` moved to module top (identical output).
+- Docs: runner v5 (was v4), full pass list, CI badge.
+
 ## [2.11.1] — reserved strings
 - `FORGE_KEEP`: comma-separated exact values uni/crypt never rewrite
   (j-obfuscator `reservedStrings` precedent). Unset by default: default

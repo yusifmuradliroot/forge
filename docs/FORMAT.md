@@ -18,7 +18,7 @@ FS:2
   Runner verifies BEFORE decrypting; mismatch → refuse, run nothing.
   HONESTY NOTE: accident-check, NOT authenticity (FNV is public and unkeyed —
   anyone can mint valid files). See LIMITS.md.
-- Runner flow (v4): tag → anti-debug gate → parse manifest → bounds-check
+- Runner flow (v5): tag → anti-debug gate → parse manifest → bounds-check
   indices → verify sig → decode per segment → CONCAT bytes → ONE TextDecoder
   (v4 fix: per-segment decode corrupted split multibyte chars) → execute.
 - Unknown tag, bad JSON, missing/short/long blobs, bad indices, bad base64,

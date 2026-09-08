@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# forge command: ./forge in.js out.fs [flags]
+# Same as: python3 tools/forge.py in.js out.fs [flags]
+# Works from the repo root, or anywhere if this dir is on PATH.
+exec python3 "$(dirname "$0")/tools/forge.py" "$@"

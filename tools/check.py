@@ -14,6 +14,9 @@ fails = []
 
 
 def main():
+    if set(sys.argv[1:]) & {"-h", "--help"}:
+        print(__doc__.strip())
+        return 0
     if not (ROOT / "VERSION").is_file():
         fails.append("missing VERSION file")
     else:
