@@ -197,6 +197,10 @@ def find_poison(code):
                 j = m.end()
                 while j < n and mask[j] in " \t\n":
                     j += 1
+                if j < n and mask[j] == "*":
+                    j += 1
+                    while j < n and mask[j] in " \t\n":
+                        j += 1
                 if j < n and mask[j] not in "(;," and (mask[j].isalpha() or mask[j] in "_$"):
                     w2 = _IDENT_RE.match(mask, j)
                     if w2:

@@ -14,8 +14,11 @@ _PATTERNS = [
     ("debugger", re.compile(r"\bdebugger\b")),
     ("eval", re.compile(r"\beval\s*\(")),
     ("Function()", re.compile(r"\bnew\s+Function\s*\(")),
+    ("Function()", re.compile(r"(?<![\w$.])Function\s*\(")),
+    ("timer-string", re.compile(r"\bset(?:Timeout|Interval)\s*\(\s*,")),
     ("innerHTML", re.compile(r"\binnerHTML\b")),
     ("outerHTML", re.compile(r"\bouterHTML\b")),
+    ("insertAdjacentHTML", re.compile(r"\binsertAdjacentHTML\b")),
     ("document.write", re.compile(r"\bdocument\s*\.\s*write(ln)?\b")),
 ]
 

@@ -41,11 +41,37 @@ def _sig_text(toks, idx, direction):
     return ""
 
 
+def _template_spans(toks):
+    """Token-index ranges living INSIDE template literals (opening backtick
+    chunk through closing one). A str token that starts like a real string
+    may be a template middle -- only ranges outside spans are encryptable."""
+    spans = []
+    depth = 0
+    start = None
+    for idx, (kind, text) in enumerate(toks):
+        if kind != "str":
+            continue
+        if not depth and text[:1] == "`" and not (len(text) > 1 and text[-1:] == "`"):
+            depth = 1
+            start = idx
+        elif depth and text[-1:] == "`":
+            depth = 0
+            spans.append((start, idx))
+    return spans
+
+
 def run(code: str) -> str:
     toks = tokenize(code)
+    in_tpl = set()
+    for a, b in _template_spans(toks):
+        for k in range(a, b + 1):
+            in_tpl.add(k)
     out = []
     changed = False
     for idx, (kind, text) in enumerate(toks):
+        if idx in in_tpl:
+            out.append(text)
+            continue
         if kind == "str" and text[:1] in ("'", '"') and len(text) >= 2 and text[-1:] == text[:1]:
             body = text[1:-1]
             try:
@@ -75,12 +101,16 @@ def run(code: str) -> str:
             out.append(text)
     result = "".join(out)
     if changed:
-        if "__f" in set(_re.findall(r"[A-Za-z_$][\w$]*", code)):
+        live = set()
+        for k2, t2 in tokenize(code):
+            if k2 == "ident":
+                live.add(t2)
+        if "__f" in live:
             raise ValueError("crypt: source already uses __f; rename it first")
         m = _re.match(
             r"((?:[ \t\r\n;]*(?:\"(?:use strict|use asm)\"|'(?:use strict|use asm)')[ \t]*;?)*)",
             result)
         cut = m.end(1)
-        glue = ";" if cut and (cut >= len(result) or result[cut] not in ";\n") else ""
+        glue = "" if cut and result[cut:cut + 1] == ";" else ";"
         result = result[:cut] + glue + STUB + result[cut:]
     return result

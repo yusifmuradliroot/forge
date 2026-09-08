@@ -2,9 +2,11 @@
 
 ## Goal
 JS protection layer, general purpose and independent. Pipeline v2:
-strip → short → crypt → pack (FS:2). Open-source release possible later.
+nolog → strip → short → crypt → pack (FS:2). Open-source release possible later.
 
 ## Done
+- v2.8.0: re-audit fixes (template crypt, stub glue, poison generators,
+  tiny-pack abort, audit sinks, PASSES + QUICKSTART docs).
 - v2.7.2: crypt token-based (regex-blind corruption fixed).
 - v2.7.1: ForgeScript kept global (runner rename broke ALL .fs plugin loads).
 - v2.7.0: `--audit` approval gate (risk report pre-build, keep-log marked KEPT).

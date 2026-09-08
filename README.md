@@ -1,7 +1,7 @@
 # forge
 
 JS protection layer: raw JS in → `.fs` data file out, executed by the forgescript runner.
-Private. Minimal by design. Current: 2.7.2 (`FS:2` segmented format, runner v4).
+Private. Minimal by design. Current: 2.8.0 (`FS:2` segmented format, runner v4).
 
 > Trust model (read first): the `.fs` signature proves the file was not
 > ACCIDENTALLY damaged. It proves NOTHING about who made it — the format,
@@ -36,6 +36,9 @@ Run an `.fs` file (node example; browser/VM: load runner once, call `run`):
 eval(require('fs').readFileSync('src/runner/forgescript.js','utf8'));
 ForgeScript.run(require('fs').readFileSync('out.fs','utf8'));
 ```
+
+## First time
+See `docs/QUICKSTART.md` (needs python3 3.8+, node any live version).
 
 ## Layout
 

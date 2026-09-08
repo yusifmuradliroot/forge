@@ -14,7 +14,7 @@ docs/                 → FORMAT.md (.fs spec), ANALYSIS.md (deep review)
 VERSION               → single version for the whole tool
 ```
 
-## Pipeline order (v2.6.0)
+## Pipeline order (v2.8.0)
 nolog → strip → short → crypt → pack. Logs first (needs comments for keep-log),
 clean second, rename third, encrypt fourth (blobs must not be renamed), pack last.
 Host mode (--host): header preserved, embed first, pack rejected.

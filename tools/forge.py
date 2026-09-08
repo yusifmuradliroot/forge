@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 """forge CLI: raw JS -> .fs (or processed .js). Usage:
-python3 tools/forge.py in.js out.fs [--passes strip,short,crypt,pack]
-python3 tools/forge.py host.js out.js --passes strip,short,crypt --embed runner.js
-Default chain is the locked v1 pipeline. pack is always forced last.
+python3 tools/forge.py in.js out.fs [--passes nolog,strip,short,crypt,pack]
+python3 tools/forge.py host.js out.js --passes nolog,strip,short,crypt --embed runner.js --embed-has ForgeScript --host
+python3 tools/forge.py in.js out.fs --audit [--yes]
+Default chain is nolog,strip,short,crypt,pack. pack is always forced last
+(and rejected in --host mode, where output must stay installable .js).
 --embed FILE inlines FILE at the /*__FORGE_RUNNER__*/ marker BEFORE passes run,
-so the first .js files holding forgescript ship clean and hard to read.
+so hosts ship with the runner processed inline. Passes run exactly once each;
+crypt refuses sources that already use __f, pack refuses empty/tiny inputs.
 """
 import argparse
 import importlib
@@ -40,7 +43,7 @@ def main():
                     help="report risky constructs (console/debugger/eval/sinks) "
                          "in the raw source and ask approval before building")
     ap.add_argument("--yes", action="store_true",
-                    help="with --audit: print the report but skip the prompt")
+                    help="with --audit: print the report but skip the prompt (no-op otherwise)")
     args = ap.parse_args()
 
     if args.version:
@@ -84,7 +87,7 @@ def main():
     if args.embed:
         raw_snippet = Path(args.embed).read_text(encoding="utf-8")
         if len(raw_snippet.encode("utf-8")) > args.embed_max:
-            print(f"embed source too large ({len(raw_snippet)} chars > {args.embed_max} cap), aborting")
+            print(f"embed source too large ({len(raw_snippet.encode('utf-8'))} bytes > {args.embed_max} cap), aborting")
             return 1
         if args.embed_has and args.embed_has not in raw_snippet:
             print(f"embed source missing required {args.embed_has!r}, aborting")
@@ -93,8 +96,10 @@ def main():
         if "/*__FORGE_RUNNER__*/" not in code:
             print("embed marker /*__FORGE_RUNNER__*/ not found, aborting")
             return 1
+        if code.count("/*__FORGE_RUNNER__*/") > 1:
+            print("warning: multiple embed markers, only the first is replaced")
         code = code.replace("/*__FORGE_RUNNER__*/", snippet, 1)
-        print(f"embedded {args.embed} ({len(snippet)} chars, verified)")
+        print(f"embedded {args.embed} ({len(snippet.encode('utf-8'))} bytes, verified)")
     for name in names:
         # L11: unknown pass names used to die with a bare traceback.
         if not name.replace("_", "").isalnum() or name.startswith("_"):

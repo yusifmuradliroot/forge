@@ -46,6 +46,11 @@ def run(code: str) -> str:
         # L14: an empty input would emit a manifest claiming 3 blobs with
         # zero blob lines (refused downstream). Abort loudly instead.
         raise ValueError("pack: empty input")
+    if len(code.encode("utf-8")) < 3:
+        # Same class: 1-2 byte inputs yield <3 non-empty blobs, which the
+        # manifest shape (always 3) contradicts. Refuse instead of shipping
+        # a file the runner must reject.
+        raise ValueError("pack: input too short (<3 bytes)")
     data = code.encode("utf-8")
     third = (len(data) + NSEG - 1) // NSEG
     segs = [data[i * third:(i + 1) * third] for i in range(NSEG)]

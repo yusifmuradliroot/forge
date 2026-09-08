@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## [2.8.0] — re-audit fixes (ai-reports/2026-09-06-forge-reaudit-2.7.2.md)
+- crypt token-based: template-middle quotes no longer encrypted (was silent
+  corruption); stub after directive prologue even without semicolon; __f
+  collision check ignores comments/strings.
+- poison: generator `function*` params covered.
+- pack refuses <3-byte inputs (were unusable-but-valid-looking files).
+- nolog drops `void console.*`; dead `off` var removed.
+- short: dead imports out; name generator also skips GLOBALS.
+- forge.py: fresh docstring, multi-marker warn, clean pass errors, --version.
+- audit: timer-string, bare Function(, insertAdjacentHTML patterns.
+- docs: PASSES.md (contracts), QUICKSTART.md, floors. selftest wires nolog.
+
 ## [2.7.2] — crypt was regex-blind (silent corruption)
 - Token-based rewrite: only real string tokens encrypted. A regex like
   /42\["(10|34)",.../ was shredded (quotes looked like string bounds),

@@ -9,7 +9,7 @@ Conservative by design — a name is renamed ONLY if ALL hold:
 Everything else is left untouched. Strings, comments, regex, templates are opaque.
 """
 
-from scan import tokenize, _regex_allowed, KEYWORDS_BEFORE_REGEX, build_mask
+from scan import tokenize
 from poison import find_poison
 
 
@@ -213,7 +213,7 @@ def run(code: str) -> str:
     for name in sorted(candidates):
         while True:
             cand = next(gen)
-            if cand not in taken and cand not in RESERVED:
+            if cand not in taken and cand not in RESERVED and cand not in GLOBALS:
                 break
         mapping[name] = cand
         taken.add(cand)

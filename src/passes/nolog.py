@@ -15,7 +15,6 @@ def _mask(code):
     (newlines kept); comments is a list of (line, text)."""
     out = []
     comments = []
-    off = 0
     line = 1
     for kind, text in tokenize(code):
         if kind in ("str", "regex", "comment"):
@@ -25,7 +24,6 @@ def _mask(code):
         else:
             out.append(text)
         line += text.count("\n")
-        off += len(text)
     return "".join(out), comments
 
 
@@ -63,7 +61,7 @@ def _stmt_start(mask, i):
     if mask[k] == ")":
         return _prev_word(mask, i) in ("if", "while", "for", "with")
     if mask[k].isalnum() or mask[k] in "_$":
-        return _prev_word(mask, i) in ("else", "do")
+        return _prev_word(mask, i) in ("else", "do", "void")
     return False
 
 

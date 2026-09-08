@@ -39,6 +39,17 @@ out = open('/tmp/st_cr.js').read()
 assert '/42' in out and '__f(' not in out, 'REGEX EATEN'
 open('/tmp/st_crypt.txt','w').write('CRYPT-REGEX PASS')" || fail=1
 say "crypt regex" "$(cat /tmp/st_crypt.txt)"
+python3 tools/forge.py tests/nolog.js /tmp/st_nl.js --passes nolog,strip,short,crypt --dev > /dev/null 2>&1 || fail=1
+node --check /tmp/st_nl.js > /dev/null 2>&1 || fail=1
+python3 -c "
+import sys; sys.path.insert(0,'src')
+from passes import nolog
+out = open('/tmp/st_nl.js').read()
+assert 'BANNER' in out, 'keep-log lost'
+assert 'strip me' not in out and 'dangling' not in out, 'statement logs leaked'
+assert 'console.log' in out, 'expression uses must survive (ternary/expr kept by design)'
+open('/tmp/st_nolog.txt','w').write('NOLOG PASS')" || fail=1
+say "nolog fixture" "$(cat /tmp/st_nolog.txt)"
 python3 -c "
 import sys; sys.path.insert(0,'src')
 from passes import short
