@@ -1,44 +1,49 @@
-"""crypt pass: encrypt long string literals, decode at runtime.
+"""crypt pass: encrypt long string literals into a shuffled table (S1+S2).
 
 Token-based (shared scanner): ONLY real '...'/"..." string tokens are
-touched. Regex content, comments and template chunks are never scanned --
-a regex like /42\\["(10|34)",.../ used to be shredded because its quotes
-looked like string bounds (silent output corruption).
-Skipped: template literals (may hold ${expr}), short strings (markers, keys),
+touched. Regex content, comments and template chunks are never scanned.
+Skipped: template literals (may hold ${expr}), short strings (uni's half),
 __-prefixed (loader markers), directives, object-key position.
-A tiny decoder stub is appended after a directive prologue (strict kept).
-Source already using __f aborts loudly.
+
+Output shape: ONE hex table + index-call decoder appended after a directive
+prologue (strict kept). Table entry order shuffles per FORGE_SEED (default:
+encounter order, diffable). Stub/table names, XOR key, chunk length and hex
+case all derive from the seed (defaults: __t/__f, 0x5A, 16, lowercase).
+Each file's stub carries its own key literal, so old .fs files keep running
+and seeded files never mix keys. A source already using the stub/table
+names aborts loudly.
 """
 
 import re as _re
 
 MIN_LEN = 12
-STUB_TPL = ("var __f=function(s){var o='',i=0;for(;i<s.length;i+=2)"
-            "{o+=String.fromCharCode(parseInt(s.substr(i,2),16)^0x%02x);}return o;};")
+STUB_TPL = ("var {t}=[{e}];var {f}=function(i){{var s={t}[i],o='',j=0;"
+            "for(;j<s.length;j+=2)o+=String.fromCharCode(parseInt(s.substr(j,2),16)^0x{k});"
+            "return o;}};")
 
 try:
     from scan import tokenize, template_inner_spans as _template_spans, sig_text as _sig_text
-    from seed import explicit_seed
+    from seed import explicit_seed, shuffled
 except ImportError:
     import os as _os
     import sys as _sys
     _sys.path.insert(0, _os.path.join(_os.path.dirname(__file__), ".."))
     from scan import tokenize, template_inner_spans as _template_spans, sig_text as _sig_text
-    from seed import explicit_seed
+    from seed import explicit_seed, shuffled
 
 
-def _key():
-    """Per-build XOR base. Default (no FORGE_SEED) is the historic 0x5A, so
-    default builds stay diffable and every old .fs keeps running (each
-    file's stub carries its own key literal)."""
+def _params():
+    """(key, chunk_len, table_name, fn_name, upper_fn). Defaults preserve
+    the historic shape (diffable builds); seeds vary everything."""
     seed = explicit_seed()
     if seed is None:
-        return 0x5A
-    return seed % 255 + 1
+        return 0x5A, 16, "__t", "__f", lambda h, k: h
+    tag = "%04x" % (seed % 65536)
 
+    def upper(h, k):
+        return h.upper() if (seed >> (k % 24)) & 1 else h
 
-def _stub(key):
-    return STUB_TPL % key
+    return seed % 255 + 1, 8 + seed % 17, "__t" + tag, "__f" + tag, upper
 
 
 def _xor_hex(s, key):
@@ -47,59 +52,69 @@ def _xor_hex(s, key):
 
 def run(code: str) -> str:
     toks = tokenize(code)
-    key = _key()
+    key, chunk_len, table_name, fn_name, upper = _params()
     in_tpl = set()
     for a, b in _template_spans(toks):
         for k in range(a, b + 1):
             in_tpl.add(k)
-    out = []
-    changed = False
+    entries = []  # hex chunks, encounter order
+    targets = {}  # token idx -> encounter entry indices
     for idx, (kind, text) in enumerate(toks):
         if idx in in_tpl:
-            out.append(text)
             continue
         if kind == "str" and text[:1] in ("'", '"') and len(text) >= 2 and text[-1:] == text[:1]:
             body = text[1:-1]
             try:
                 value = body.encode().decode("unicode_escape")
             except Exception:
-                value = None
-            if value is None:
-                out.append(text)
                 continue
             if value.startswith("__"):
-                out.append(text)  # loader markers (mustContain) — never touch
-                continue
+                continue  # loader markers (mustContain) — never touch
             if value in ("use strict", "use asm"):
-                out.append(text)  # directives lose meaning when encrypted
-                continue
+                continue  # directives lose meaning when encrypted
             prev_t = _sig_text(toks, idx, -1).rstrip()
             next_t = _sig_text(toks, idx, 1).lstrip()
             if next_t.startswith(":") and prev_t.endswith(("{", ",")):
-                out.append(text)  # object key position — a call is invalid there
-                continue
+                continue  # object key position — a call is invalid there
             if len(value) >= MIN_LEN and all(ord(ch) < 128 for ch in value):
-                # splitStrings: long literals become concatenated chunk calls.
-                # Same runtime value, scattered layout (cheap, AST-free).
-                chunks = [value[i:i + 16] for i in range(0, len(value), 16)]
-                out.append("+".join('__f("' + _xor_hex(c, key) + '")' for c in chunks))
-                changed = True
-                continue
-            out.append(text)
+                # splitStrings: long literals become table entries; the call
+                # shape stays a plain `+` chain (cheap, AST-free).
+                idxs = []
+                for off in range(0, len(value), chunk_len):
+                    idxs.append(len(entries))
+                    entries.append(upper(_xor_hex(value[off:off + chunk_len], key),
+                                         len(entries)))
+                targets[idx] = idxs
+    if not targets:
+        return code
+    live = set()
+    for k2, t2 in toks:
+        if k2 == "ident":
+            live.add(t2)
+    if table_name in live or fn_name in live:
+        raise ValueError("crypt: source already uses %s/%s; rename first"
+                         % (table_name, fn_name))
+    seed = explicit_seed()
+    order = shuffled(list(range(len(entries))), seed) if seed is not None \
+        else list(range(len(entries)))
+    pos = {e: p for p, e in enumerate(order)}
+    table = ",".join('"' + entries[e] + '"' for e in order)
+    stub = STUB_TPL.format(t=table_name, e=table, f=fn_name,
+                           k="%02x" % key)
+    # Pass 2: emit calls with final (shuffled) positions straight into the
+    # token stream, so no text-level remapping ever touches string contents.
+    out = []
+    for idx, (kind, text) in enumerate(toks):
+        if idx in targets:
+            out.append("+".join("%s(%d)" % (fn_name, pos[e])
+                                for e in targets[idx]))
         else:
             out.append(text)
     result = "".join(out)
-    if changed:
-        live = set()
-        for k2, t2 in tokenize(code):
-            if k2 == "ident":
-                live.add(t2)
-        if "__f" in live:
-            raise ValueError("crypt: source already uses __f; rename it first")
-        m = _re.match(
-            r"((?:[ \t\r\n;]*(?:\"(?:use strict|use asm)\"|'(?:use strict|use asm)')[ \t]*;?)*)",
-            result)
-        cut = m.end(1)
-        glue = "" if cut and result[cut:cut + 1] == ";" else ";"
-        result = result[:cut] + glue + _stub(key) + result[cut:]
+    m = _re.match(
+        r"((?:[ \t\r\n;]*(?:\"(?:use strict|use asm)\"|'(?:use strict|use asm)')[ \t]*;?)*)",
+        result)
+    cut = m.end(1)
+    glue = "" if cut and result[cut:cut + 1] == ";" else ";"
+    result = result[:cut] + glue + stub + result[cut:]
     return result

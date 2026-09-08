@@ -19,6 +19,14 @@ ForgeScript.run(require('fs').readFileSync('out.fs', 'utf8'));
 Embed into a host `.js` (userscript): put `/*__FORGE_RUNNER__*/` where the
 runner should inline, then build with `--embed src/runner/forgescript.js
 --embed-has ForgeScript --host` (pack is rejected in host mode).
+Bake a stricter anti-debug gate into the embedded runner with
+`--gate 30` (default 100ms; needs --embed).
+
+## What a build does (60-second example)
+In: `function greet(name) { var msg = "hello brave world"; return msg + name; }`
+Chain: `name`/`msg` shorten, `"hello brave world"` becomes a table call,
+statements join with commas. Out (dev): still readable JS, same behavior.
+Out (`.fs`): pure data, only the 1 KB runner executes it.
 
 Read next: `docs/FORMAT.md` (file spec), `docs/LIMITS.md` (trust model),
 `docs/PASSES.md` (pass contracts).

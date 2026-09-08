@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 """forge CLI: raw JS -> .fs (or processed .js). Usage:
-python3 tools/forge.py in.js out.fs [--passes nolog,strip,short,num,simp,uni,crypt,pack]
+python3 tools/forge.py in.js out.fs [--passes nolog,strip,short,num,flow,simp,uni,crypt,pack]
 python3 tools/forge.py host.js out.js --passes nolog,strip,short,crypt --embed runner.js --embed-has ForgeScript --host
 python3 tools/forge.py in.js out.fs --audit [--yes]
-Default chain is nolog,strip,short,num,simp,uni,crypt,pack. pack is always forced last
+Default chain is nolog,strip,short,num,flow,simp,uni,crypt,pack. pack is always forced last
 (and rejected in --host mode, where output must stay installable .js).
 --embed FILE inlines FILE at the /*__FORGE_RUNNER__*/ marker BEFORE passes run,
 so hosts ship with the runner processed inline. Passes run exactly once each;
-crypt refuses sources that already use __f, pack refuses empty/tiny inputs.
+crypt refuses sources that already use its stub/table names, pack refuses empty/tiny inputs.
+--gate MS (with --embed only) bakes a stricter runner anti-debug threshold
+into the embedded copy (default 100ms, 0..10000); the marker must match exactly once.
 """
 import argparse
 import importlib
@@ -17,7 +19,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
-DEFAULT = ["nolog", "strip", "short", "num", "simp", "uni", "crypt", "pack"]
+DEFAULT = ["nolog", "strip", "short", "num", "flow", "simp", "uni", "crypt", "pack"]
 
 
 def main():
@@ -44,6 +46,9 @@ def main():
                          "in the raw source and ask approval before building")
     ap.add_argument("--yes", action="store_true",
                     help="with --audit: print the report but skip the prompt (no-op otherwise)")
+    ap.add_argument("--gate", type=int, default=100,
+                    help="runner anti-debug threshold ms for --embed builds "
+                         "(default 100, 0..10000; needs --embed)")
     args = ap.parse_args()
 
     if args.version:
@@ -100,6 +105,19 @@ def main():
             print("warning: multiple embed markers, only the first is replaced")
         code = code.replace("/*__FORGE_RUNNER__*/", snippet, 1)
         print(f"embedded {args.embed} ({len(snippet.encode('utf-8'))} bytes, verified)")
+    if args.gate != 100:
+        if not args.embed:
+            print("--gate needs --embed (the threshold lives in the runner), aborting")
+            return 1
+        if not 0 <= args.gate <= 10000:
+            print("--gate must be 0..10000 ms, aborting")
+            return 1
+        marker = "Date.now()-a>100"
+        if code.count(marker) != 1:
+            print("--gate marker not found exactly once, aborting (runner changed?)")
+            return 1
+        code = code.replace(marker, f"Date.now()-a>{args.gate}")
+        print(f"gate threshold baked: {args.gate}ms")
     for name in names:
         # L11: unknown pass names used to die with a bare traceback.
         if not name.replace("_", "").isalnum() or name.startswith("_"):

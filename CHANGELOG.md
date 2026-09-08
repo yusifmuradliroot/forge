@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## [2.11.0] "golden gate era" — safe-max batch 1 (ai-reports/2026-09-08-safe-max-v1.md)
+- New `flow` pass (F1): comma-join, negation-flip, while-true -> for(;;).
+  Text-only, zero runtime cost. Chain: num -> flow -> simp.
+- `crypt` string table (S1): ONE shuffled hex table + index calls instead
+  of inline decoders. Seeded stub/table names, chunk length, hex case (S2).
+- `short` fixes + N1: named/generator function params are renamed at last
+  (the scanner silently skipped them — found via N1 work); FORGE_SCOPE=1
+  enables the shadowed-param prototype (flagged, experimental).
+- CLI `--gate MS`: bake a stricter runner anti-debug threshold into
+  --embed builds (default 100ms untouched; runner source unchanged).
+- `short` guard checks pre-grouped by name (O(occurrences), was O(file)
+  per candidate): 230KB adversarial input 15s -> 0.35s, same output.
+- CI runs on ubuntu + windows (bash). Selftest: flow/scope/gate probes.
+
 ## [2.10.0] — ELO round (ai-reports/2026-09-08-elo-gains-v1.md)
 - `crypt` per-build key: XOR base derives from FORGE_SEED (default stays
   historic 0x5A, diffable; stub carries its own key literal, old files run).

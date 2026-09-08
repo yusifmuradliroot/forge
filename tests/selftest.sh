@@ -128,5 +128,60 @@ try:
 except ValueError:
     open('/tmp/st_err.txt','w').write('ERR-PATHS PASS')" || fail=1
 say "error paths" "$(cat /tmp/st_err.txt)"
+python3 -c "
+import sys; sys.path.insert(0,'src')
+from passes import flow
+cases = [
+  ('foo(); bar();', 'foo(), bar();'),
+  ('\"use strict\"; foo(); bar();', '\"use strict\"; foo(), bar();'),
+  ('if (!x) {a();} else {b();}', 'if(x){b();}else{a();}'),
+  ('if (!!x) {a();} else {b();}', 'if(x){a();}else{b();}'),
+  ('if (x) {a();} else if (y) {b();}', 'if (x) {a();} else if (y) {b();}'),
+  ('while (!0) {tick();}', 'for(;;){tick();}'),
+  ('do {t();} while (!0);', 'do {t();} while (!0);'),
+  ('var o = {a: 1}; foo();', 'var o = {a: 1}; foo();'),
+  ('loop: foo(); bar();', 'loop: foo(); bar();'),
+  ('c ? a() : b(); d();', 'c ? a() : b(), d();'),
+  ('debugger; foo();', 'debugger; foo();'),
+  ('if (!x) {a();}', 'if (!x) {a();}'),
+  ('a();b();c();', 'a(),b(),c();'),
+  ('return a(); b();', 'return a(); b();'),
+]
+bad = 0
+for src, want in cases:
+    got = flow.run(src)
+    if got != want: bad += 1; print('FLOW-FAIL', repr(src), '->', repr(got))
+open('/tmp/st_flow.txt','w').write('FLOW ' + ('PASS' if bad == 0 else f'FAIL({bad})'))" || fail=1
+say "flow behavior" "$(cat /tmp/st_flow.txt)"
+python3 tools/forge.py tests/flow.js /tmp/st_flow.js --passes strip,flow --dev > /dev/null 2>&1 || fail=1
+node --check /tmp/st_flow.js > /dev/null 2>&1 || fail=1
+node -e "
+const fs=require('fs');
+const logs=[]; const o=console.log; console.log=(...a)=>logs.push(a.join(' '));
+eval(fs.readFileSync('/tmp/st_flow.js','utf8')); console.log=o;
+if (logs.length) { console.log('FLOW-LEAK'); process.exit(1); }
+console.log('FLOW-RUN CLEAN');
+" > /tmp/st_flowrun.txt 2>&1 || fail=1
+say "flow fixture" "$(tail -1 /tmp/st_flowrun.txt)"
+FORGE_SCOPE=1 python3 tools/forge.py tests/scope.js /tmp/st_scope.out.js --passes strip,short --dev > /dev/null 2>&1 || fail=1
+node --check /tmp/st_scope.out.js > /dev/null 2>&1 || fail=1
+node tests/scope.js > /tmp/st_scope.want 2>&1 || fail=1
+node /tmp/st_scope.out.js > /tmp/st_scope.got 2>&1 || fail=1
+python3 -c "
+want = open('/tmp/st_scope.want').read()
+got = open('/tmp/st_scope.got').read()
+assert want == got, 'scope runtime differs: ' + repr(got)
+assert 'SCOPE 33' in got and 'SIB 6 10' in got, 'scope values wrong'
+open('/tmp/st_scope.txt','w').write('SCOPE PASS')" || fail=1
+say "scope tortures" "$(cat /tmp/st_scope.txt)"
+python3 tools/forge.py tests/e2e.js /tmp/st_gate.js --passes strip --dev --gate 30 --embed /dev/null > /dev/null 2>&1 && fail=1
+printf '// ==UserScript==\n// ==/UserScript==\n/*__FORGE_RUNNER__*/\nvar x = 1;\n' > /tmp/st_host.js
+python3 tools/forge.py /tmp/st_host.js /tmp/st_host.out.js --passes strip --embed src/runner/forgescript.js --embed-has ForgeScript --host --gate 30 > /dev/null 2>&1 || fail=1
+python3 -c "
+out = open('/tmp/st_host.out.js').read()
+assert 'Date.now()-a>30' in out, 'gate not baked'
+assert 'Date.now()-a>100' not in out, 'old gate leaked'
+open('/tmp/st_gate.txt','w').write('GATE PASS')" || fail=1
+say "gate flag" "$(cat /tmp/st_gate.txt)"
 [ $fail -eq 0 ] && echo "SELFTEST GREEN" || echo "SELFTEST RED"
 exit $fail

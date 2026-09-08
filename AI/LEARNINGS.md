@@ -47,6 +47,29 @@
 - Declined again with cause: control-flow/VM/dead-code/HMAC/domainLock.
   Predicted score 58 -> ~65 (names +1, strings +3, workflow +3).
 
+## 2026-09-08 — v2.11.0 "golden gate era" (safe-max batch 1)
+- Latent bug found via N1 work: short's param scanner never recorded NAMED
+  function params (whitespace token between `function` and name broke the
+  lookahead; only `function(` anonymous worked). Fixed with gap-skipping +
+  generator-star handling; default output intentionally improved (more
+  renames), battery + fixtures + big-file run-compare re-verified.
+- crypt S1: two-pass emission (collect entries, then emit calls with final
+  shuffled positions) — a text-level index remap would have rewritten
+  `"__f(0)"` inside string CONTENTS (caught in review before testing).
+- N1 rule that holds: smallest span with exactly one site + body-guard
+  (nested function/arrow/eval/with/arguments); guards run on the BODY, never
+  the whole span (the span head holds `function` itself — first prototype
+  version guarded everything out, caught by torture).
+- --gate bakes the threshold into the EMBEDDED copy only (exact-once marker
+  replace, loud abort); runner source untouched, default 100ms, no consumer
+  rebuild needed.
+- Perf defense: short's per-candidate full-file scan was O(C x I)
+  (15s on a 230KB many-locals input; pre-existing class, worse with more
+  candidates). Pre-grouped idents by name -> 0.35s, byte-identical output.
+  Lesson: every new candidate source re-tests the hot path.
+- Codename lives in CHANGELOG + README + WHEREWEARE; VERSION stays numeric
+  (check.py rides + --version cleanliness).
+
 ## Working with this user
 - Approves fast ("ekle", "yaz", "evet", "devam") — execute immediately.
 - Strategic calls stay with user; max 2-3 options, recommend one.

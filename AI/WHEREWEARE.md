@@ -2,10 +2,13 @@
 
 ## Goal
 JS protection layer, general purpose and independent. Pipeline v2:
-nolog → strip → short → num → simp → uni → crypt → pack (FS:2).
+nolog → strip → short → num → flow → simp → uni → crypt → pack (FS:2).
 Open-source release possible later.
 
 ## Done
+- v2.11.0 "golden gate era": safe-max batch 1 — flow pass, crypt string
+  table + seeded stub, short param-scanner fix + N1 scope prototype
+  (FORGE_SCOPE flag), --gate flag, windows CI, flow/scope/gate probes.
 - v2.10.0: ELO round (elo-gains report Q1-Q4) — crypt per-build key, short
   seed-shuffle, uni pass, src/seed.py, shared scan helpers, CI, selftest probes.
 - v2.9.0: num + simp passes (hex ints, !0/!1, folding, dead branches).
@@ -28,8 +31,8 @@ Open-source release possible later.
 - Device: mobile, Firefox-based. Console: AVAILABLE for now (past logs received).
 
 ## In progress
-- Safe-max report shipped (ai-reports/2026-09-08-safe-max-v1.md): ceiling
-  ~78/100, innovation catalog F1/S1/S2/N1/Z1/T1/W1. Next: owner picks batch.
+- "golden gate era" batch 1 shipped (2.11.0). Safe-max rest: 2.12 strings-II
+  leftovers (Z1 alphabet study) + 2.13 workflow round (W1 remainder).
 
 ## Next (trigger-based — NOT scheduled)
 - v3 chunked execution (never full plaintext in memory; needs scope-aware splitter).

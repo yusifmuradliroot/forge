@@ -9,11 +9,12 @@ Conservative by design — a name is renamed ONLY if ALL hold:
 Everything else is left untouched. Strings, comments, regex, templates are opaque.
 """
 
-from scan import tokenize
+from scan import tokenize, build_mask
 from seed import explicit_seed, shuffled
 from poison import find_poison
 
 
+import os
 import re
 
 RESERVED = set("""
@@ -95,11 +96,115 @@ def _split_params(text):
     return names
 
 
+def _is_clean(name, positions, toks):
+    """No property/key/new occurrence anywhere (global guard). positions are
+    the token indices holding `name` (pre-grouped: O(occurrences), not O(file))."""
+    for kk in positions:
+        if _prev_other_behind(toks, kk) == ".":
+            return False
+        if _next_other_ahead(toks, kk) == ":":
+            return False
+        if _prev_ident(toks, kk) == "new":
+            return False
+    return True
+
+
+_GUARD_WORDS = re.compile(r"(?<![\w$])(function|eval|with|arguments)(?![\w$])")
+
+
+def _func_spans(mask):
+    """(start, body_open, end) per `function` construct incl. params.
+    Matching runs on the mask (only real brackets visible)."""
+    spans = []
+    for m in re.finditer(r"(?<![\w$.])function(?![\w$])", mask):
+        p = mask.find("(", m.end())
+        if p < 0:
+            continue
+        if re.fullmatch(r"[\s\w$*]*", mask[m.end():p]) is None:
+            continue
+        d, i = 0, p
+        while i < len(mask):
+            if mask[i] == "(":
+                d += 1
+            elif mask[i] == ")":
+                d -= 1
+                if d == 0:
+                    break
+            i += 1
+        else:
+            continue
+        q = i + 1
+        while q < len(mask) and mask[q] in " \t\n":
+            q += 1
+        if q >= len(mask) or mask[q] != "{":
+            continue
+        d, j = 0, q
+        while j < len(mask):
+            if mask[j] == "{":
+                d += 1
+            elif mask[j] == "}":
+                d -= 1
+                if d == 0:
+                    break
+            j += 1
+        else:
+            continue
+        spans.append((m.start(), q, j + 1))
+    return spans
+
+
+def _scope_shadows(code, mask, toks, decls, param_sites, poisoned, taken, gen):
+    """N1 prototype (FORGE_SCOPE=1 only): rename shadowed function params.
+
+    A name declared exactly twice, both as `function` params, gets a fresh
+    name inside the smallest function span holding exactly one site — when
+    that span holds no nested function/arrow/eval/with/arguments (any of
+    which could observe the outer binding). Default builds never run this.
+    """
+    offs = []
+    pos = 0
+    for _, text in toks:
+        offs.append(pos)
+        pos += len(text)
+    idents = [(k, t) for k, (kind, t) in enumerate(toks) if kind == "ident"]
+    by_name = {}
+    for kk, tt in idents:
+        by_name.setdefault(tt, []).append(kk)
+    spans = sorted(_func_spans(mask), key=lambda s: s[2] - s[0])
+    rules = []
+    for name, sites in decls.items():
+        if len(sites) != 2:
+            continue
+        if name in RESERVED or name in GLOBALS or name in poisoned:
+            continue
+        if not all(s in param_sites for s in sites):
+            continue
+        if not _is_clean(name, by_name.get(name, []), toks):
+            continue
+        so = sorted(offs[s] for s in sites)
+        for (a, q, b) in spans:
+            if len([x for x in so if a <= x < b]) != 1:
+                continue
+            # guards run on the BODY only (the span head trivially holds
+            # `function` itself)
+            if _GUARD_WORDS.search(mask[q:b]) or "=>" in mask[q:b]:
+                continue
+            while True:
+                cand = next(gen)
+                if cand not in taken and cand not in RESERVED and cand not in GLOBALS:
+                    break
+            taken.add(cand)
+            rules.append((name, cand, a, b))
+            break
+    return rules, offs
+
+
 def run(code: str) -> str:
     toks = tokenize(code)
     idents = [(k, t) for k, (kind, t) in enumerate(toks) if kind == "ident"]
 
     decls = {}
+    param_sites = set()
     i = 0
     while i < len(idents):
         k, name = idents[i]
@@ -133,16 +238,22 @@ def run(code: str) -> str:
         i += 1
 
     # params via paren scan on token stream
+    def _skip_gap(k):
+        while k < len(toks) and (toks[k][0] == "comment" or (
+                toks[k][0] == "other" and not toks[k][1].strip())):
+            k += 1
+        return k
+
     ti = 0
     while ti < len(toks):
         kind, text = toks[ti]
         if kind == "ident" and text == "function":
-            # find '(' after optional name
-            tj = ti + 1
-            while tj < len(toks) and toks[tj][0] in ("comment",) :
-                tj += 1
+            # find '(' after optional `*` and optional name
+            tj = _skip_gap(ti + 1)
+            if tj < len(toks) and toks[tj][0] == "other" and toks[tj][1].strip() == "*":
+                tj = _skip_gap(tj + 1)
             if tj < len(toks) and toks[tj][0] == "ident":
-                tj += 1
+                tj = _skip_gap(tj + 1)
             depth_text = ""
             if tj < len(toks) and toks[tj][0] == "other" and "(" in toks[tj][1]:
                 # collect balanced parens across 'other' tokens (idents inside handled separately)
@@ -163,6 +274,7 @@ def run(code: str) -> str:
                         if toks[kk][0] == "ident" and toks[kk][1] == pn:
                             # ensure it is a param position (not nested arrow body): accept first occurrence
                             decls.setdefault(pn, []).append(kk)
+                            param_sites.add(kk)
                             break
         ti += 1
 
@@ -170,6 +282,9 @@ def run(code: str) -> str:
         poisoned = find_poison(code)
     except Exception:
         poisoned = set()
+    by_name = {}
+    for kk, tt in idents:
+        by_name.setdefault(tt, []).append(kk)
     candidates = {}
     for name, sites in decls.items():
         if len(sites) != 1:
@@ -178,20 +293,7 @@ def run(code: str) -> str:
             continue
         if name in poisoned:
             continue
-        bad = False
-        for kk, tt in idents:
-            if tt != name:
-                continue
-            if _prev_other_behind(toks, kk) == ".":
-                bad = True
-                break
-            if _next_other_ahead(toks, kk) == ":":
-                bad = True
-                break
-            if _prev_ident(toks, kk) == "new":
-                bad = True
-                break
-        if not bad:
+        if _is_clean(name, by_name.get(name, []), toks):
             candidates[name] = sites[0]
 
     # short names a..z, aa..az, ... generated lazily, skipping taken/reserved
@@ -225,10 +327,27 @@ def run(code: str) -> str:
         mapping[name] = cand
         taken.add(cand)
 
+    span_rules, tok_offs = ([], None)
+    if os.environ.get("FORGE_SCOPE", ""):
+        # N1 prototype: shadowed params renamed inside their own span only.
+        span_rules, tok_offs = _scope_shadows(code, build_mask(code), toks,
+                                              decls, param_sites, poisoned,
+                                              taken, gen)
+
     out = []
-    for kind, text in toks:
-        if kind == "ident" and text in mapping:
-            out.append(mapping[text])
-        else:
-            out.append(text)
+    for ti, (kind, text) in enumerate(toks):
+        if kind == "ident":
+            if text in mapping:
+                out.append(mapping[text])
+                continue
+            if tok_offs is not None:
+                hit = None
+                for (nm, nn, a, b) in span_rules:
+                    if text == nm and a <= tok_offs[ti] < b:
+                        hit = nn
+                        break
+                if hit is not None:
+                    out.append(hit)
+                    continue
+        out.append(text)
     return "".join(out)

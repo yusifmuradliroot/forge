@@ -14,9 +14,10 @@ docs/                 → FORMAT.md (.fs spec), ANALYSIS.md (deep review)
 VERSION               → single version for the whole tool
 ```
 
-## Pipeline order (v2.10.0)
-nolog → strip → short → num → simp → uni → crypt → pack. Logs first, clean,
-rename, numbers+simplify+short-strings (pre-encrypt spellings), encrypt, pack last.
+## Pipeline order (v2.11.0 "golden gate era")
+nolog → strip → short → num → flow → simp → uni → crypt → pack. Logs first,
+clean, rename, numbers+flow (pre-encrypt spellings), simplify, short strings,
+encrypt (shuffled table), pack last.
 Host mode (--host): header preserved, embed first, pack rejected.
 
 ## Embedding pattern (for consumers)

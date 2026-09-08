@@ -18,7 +18,11 @@ compiler step. FS:2 segments are transport-level. Not oversold, not scheduled.
 
 ## 4. Mangling limits (short is conservative; these never rename correctly)
 - `eval("name")` / `with (obj)` + renamed locals: rename breaks them. Keep
-  eval/with out of forged sources.
+  eval/with out of forged sources. (FORGE_SCOPE=1 additionally refuses any
+  function whose body holds eval/with/arguments/nested functions — but the
+  base rule stands: audit first.)
+- FORGE_SCOPE=1 (N1 prototype) is experimental: same-file shadowing only,
+  diff the output before shipping.
 - `export function f`: renamed (breaks importers). Forge targets bundles.
 - `import x from "..."`: the specifier would be escaped/encrypted (uni/crypt;
   bundles have none — document).
