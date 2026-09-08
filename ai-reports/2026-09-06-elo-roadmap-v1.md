@@ -53,3 +53,11 @@ strong. HMAC dropped for cause (public runner = public key = theater).
 - Battery extends: decrypt-compare covers crypto; run-compare covers simplify;
   tripwire tested by flipping one runner byte (must refuse).
 - Version per batch (2.9/2.10/2.11?) or single 2.9.0 — owner call at build time.
+
+## 2.9.0 scope notes (2026-09-06, honest cuts)
+- Runner self-tripwire: DROPPED as designed (self-measurement is impossible
+  without self-read; a dev-time seal would merely duplicate git). The refusal
+  paths + battery stay the integrity story.
+- Cross-file ident cache: DEFERRED to 2.10 (order-dependent builds need a
+  cache-invalidation story first; wrong cache = silent cross-file breakage).
+- Shipped in 2.9.0: salt+rotation+seed, splitStrings, num, simp, DEFAULT.
