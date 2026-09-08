@@ -23,13 +23,13 @@ STUB_TPL = ("var {t}=[{e}];var {f}=function(i){{var s={t}[i],o='',j=0;"
 
 try:
     from scan import tokenize, template_inner_spans as _template_spans, sig_text as _sig_text
-    from seed import explicit_seed, shuffled
+    from seed import explicit_seed, shuffled, keep_values
 except ImportError:
     import os as _os
     import sys as _sys
     _sys.path.insert(0, _os.path.join(_os.path.dirname(__file__), ".."))
     from scan import tokenize, template_inner_spans as _template_spans, sig_text as _sig_text
-    from seed import explicit_seed, shuffled
+    from seed import explicit_seed, shuffled, keep_values
 
 
 def _params():
@@ -59,6 +59,7 @@ def run(code: str) -> str:
             in_tpl.add(k)
     entries = []  # hex chunks, encounter order
     targets = {}  # token idx -> encounter entry indices
+    keep = keep_values()
     for idx, (kind, text) in enumerate(toks):
         if idx in in_tpl:
             continue
@@ -70,6 +71,8 @@ def run(code: str) -> str:
                 continue
             if value.startswith("__"):
                 continue  # loader markers (mustContain) — never touch
+            if value in keep:
+                continue  # FORGE_KEEP reserved strings — never touch
             if value in ("use strict", "use asm"):
                 continue  # directives lose meaning when encrypted
             prev_t = _sig_text(toks, idx, -1).rstrip()

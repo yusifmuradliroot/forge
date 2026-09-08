@@ -183,5 +183,12 @@ assert 'Date.now()-a>30' in out, 'gate not baked'
 assert 'Date.now()-a>100' not in out, 'old gate leaked'
 open('/tmp/st_gate.txt','w').write('GATE PASS')" || fail=1
 say "gate flag" "$(cat /tmp/st_gate.txt)"
+FORGE_KEEP='join room' python3 tools/forge.py tests/uni.js /tmp/st_keep.js --passes strip,uni --dev > /dev/null 2>&1 || fail=1
+node --check /tmp/st_keep.js > /dev/null 2>&1 || fail=1
+python3 -c "
+out = open('/tmp/st_keep.js').read()
+assert '\"join room\"' in out, 'reserved string escaped'
+open('/tmp/st_keep.txt','w').write('KEEP PASS')" || fail=1
+say "keep reserve" "$(cat /tmp/st_keep.txt)"
 [ $fail -eq 0 ] && echo "SELFTEST GREEN" || echo "SELFTEST RED"
 exit $fail

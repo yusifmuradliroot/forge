@@ -8,10 +8,12 @@ by length, so pass order between the two is irrelevant.
 """
 
 from scan import tokenize, template_inner_spans, sig_text
+from seed import keep_values
 
 
 def run(code: str) -> str:
     toks = tokenize(code)
+    keep = keep_values()
     in_tpl = set()
     for a, b in template_inner_spans(toks):
         for k in range(a, b + 1):
@@ -33,6 +35,9 @@ def run(code: str) -> str:
                 value = body
             if not value or len(value) >= 12:
                 out.append(text)  # empty stays byte-identical; long is crypt's
+                continue
+            if value in keep:
+                out.append(text)  # FORGE_KEEP reserved strings — never touch
                 continue
             if value.startswith("__"):
                 out.append(text)  # loader markers (mustContain) -- never touch

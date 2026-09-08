@@ -34,3 +34,10 @@ def shuffled(items, seed):
         j = s % (i + 1)
         a[i], a[j] = a[j], a[i]
     return a
+
+
+def keep_values():
+    """Reserved strings (j-obfuscator `reservedStrings` precedent): exact
+    decoded values that uni/crypt must never rewrite, comma-separated in
+    FORGE_KEEP. Unset means none; default builds are unaffected."""
+    return {v for v in os.environ.get("FORGE_KEEP", "").split(",") if v}

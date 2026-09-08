@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## [2.11.1] — reserved strings
+- `FORGE_KEEP`: comma-separated exact values uni/crypt never rewrite
+  (j-obfuscator `reservedStrings` precedent). Unset by default: default
+  builds byte-identical to 2.11.0. Selftest KEEP probe.
+
 ## [2.11.0] "golden gate era" — safe-max batch 1 (ai-reports/2026-09-08-safe-max-v1.md)
 - New `flow` pass (F1): comma-join, negation-flip, while-true -> for(;;).
   Text-only, zero runtime cost. Chain: num -> flow -> simp.

@@ -6,7 +6,8 @@ never change runtime behavior — only representation. Order:
 
 Shared machinery: `src/scan.py` (tokenizer + mask — the ONLY scanner anyone
 may use), `src/poison.py` (never-rename names, short only),
-`src/seed.py` (build variance from FORGE_SEED — the ONLY seed source).
+`src/seed.py` (build variance from FORGE_SEED — the ONLY seed source;
+also `FORGE_KEEP`: comma-separated reserved string values uni/crypt skip).
 
 ## num — decimal ints to hex
 Token-based: only matches inside `other` tokens, so strings/regex/comments/
