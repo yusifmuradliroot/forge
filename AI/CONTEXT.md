@@ -15,8 +15,8 @@ VERSION               → single version for the whole tool
 ```
 
 ## Pipeline order (v2.8.0)
-nolog → strip → short → crypt → pack. Logs first (needs comments for keep-log),
-clean second, rename third, encrypt fourth (blobs must not be renamed), pack last.
+nolog → strip → short → num → simp → crypt → pack. Logs first, clean,
+rename, numbers+simplify (pre-encrypt spellings), encrypt, pack last.
 Host mode (--host): header preserved, embed first, pack rejected.
 
 ## Embedding pattern (for consumers)

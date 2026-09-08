@@ -17,7 +17,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
-DEFAULT = ["strip", "short", "crypt", "pack"]
+DEFAULT = ["nolog", "strip", "short", "num", "simp", "crypt", "pack"]
 
 
 def main():

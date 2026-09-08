@@ -52,6 +52,23 @@ open('/tmp/st_nolog.txt','w').write('NOLOG PASS')" || fail=1
 say "nolog fixture" "$(cat /tmp/st_nolog.txt)"
 python3 -c "
 import sys; sys.path.insert(0,'src')
+from passes import simp
+cases = [
+  ('if (true) { foo(); }', '{ foo(); }'),
+  ('if (false) { foo(); } else { bar(); }', '{ bar(); }'),
+  ('while (false) { foo(); }', ''),
+  ('var s = 2 + 3;', 'var s = 5;'),
+  ('if (x) { y(); } else if (z) { w(); }', 'if (x) { y(); } else if (z) { w(); }'),
+  ('var o = {if(true){y}};', 'var o = {if(!0){y}};'),
+]
+bad = 0
+for src, want in cases:
+    got = simp.run(src)
+    if got != want: bad += 1; print('SIMP-FAIL', repr(src), '->', repr(got))
+open('/tmp/st_simp.txt','w').write('SIMP ' + ('PASS' if bad == 0 else f'FAIL({bad})'))" || fail=1
+say "simp behavior" "$(cat /tmp/st_simp.txt)"
+python3 -c "
+import sys; sys.path.insert(0,'src')
 from passes import short
 # H2/H3/H4 regression probes: property positions must survive
 probes = [

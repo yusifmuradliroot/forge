@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [2.9.0] — simplify round (num + simp passes, DEFAULT extended)
+- `num`: decimal ints -> hex (token-based; floats/exponents/BigInt/dotted safe).
+- `simp`: true->!0/false->!1, safe-int folding, string concat, literal dead
+  branches (char-exact spans; else-if chains + if/while-named methods kept).
+- DEFAULT is now nolog,strip,short,num,simp,crypt,pack.
+
 ## [2.8.0] — re-audit fixes (ai-reports/2026-09-06-forge-reaudit-2.7.2.md)
 - crypt token-based: template-middle quotes no longer encrypted (was silent
   corruption); stub after directive prologue even without semicolon; __f

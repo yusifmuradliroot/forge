@@ -5,6 +5,7 @@ JS protection layer, general purpose and independent. Pipeline v2:
 nolog → strip → short → crypt → pack (FS:2). Open-source release possible later.
 
 ## Done
+- v2.9.0: num + simp passes (hex ints, !0/!1, folding, dead branches).
 - v2.8.0: re-audit fixes (template crypt, stub glue, poison generators,
   tiny-pack abort, audit sinks, PASSES + QUICKSTART docs).
 - v2.7.2: crypt token-based (regex-blind corruption fixed).

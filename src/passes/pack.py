@@ -1,5 +1,10 @@
 """pack pass: emit the .fs data file. ALWAYS LAST.
 
+Salt: manifest carries "k" (8 hex chars). XOR schedule + shuffle derive from
+it, so identical inputs differ per salt. Default salt = fnv(input) (builds
+stay diffable); FORGE_SEED=N overrides it. Old files without "k" stay valid:
+the runner falls back to the legacy constant schedule.
+
 FS:2 layout (pure data, no loader inside):
   line 1: FS:2
   line 2: manifest JSON {"o":[disk indices in exec order],"s":sig}
@@ -16,6 +21,7 @@ FS:2 layout (pure data, no loader inside):
 
 import base64
 import json
+import os
 
 TAG = "FS:2"
 NSEG = 3
@@ -29,6 +35,15 @@ def fnv1a(data: bytes) -> int:
     return h
 
 
+def _salt_for(data: bytes) -> bytes:
+    seed = os.environ.get("FORGE_SEED", "")
+    if seed:
+        h = fnv1a(("forge-seed:" + seed).encode())
+    else:
+        h = fnv1a(data)
+    return bytes([(h >> s) & 0xFF for s in (0, 8, 16, 24)])
+
+
 def _shuffle(idx, seed):
     a = list(idx)
     s = seed & 0xFFFFFFFF or 1
@@ -37,6 +52,11 @@ def _shuffle(idx, seed):
         j = s % (i + 1)
         a[i], a[j] = a[j], a[i]
     return a
+
+
+def _rot(s, r):
+    r %= len(s) if s else 1
+    return s[r:] + s[:r]
 
 
 def run(code: str) -> str:
@@ -52,20 +72,22 @@ def run(code: str) -> str:
         # a file the runner must reject.
         raise ValueError("pack: input too short (<3 bytes)")
     data = code.encode("utf-8")
+    salt = _salt_for(data)
     third = (len(data) + NSEG - 1) // NSEG
     segs = [data[i * third:(i + 1) * third] for i in range(NSEG)]
     blobs_exec = []
     for e, seg in enumerate(segs):
-        kb = 0x5A ^ ((e * 31 + 7) % 256)
+        kb = 0x5A ^ ((e * 31 + 7) % 256) ^ salt[e % len(salt)]
         blobs_exec.append(base64.b64encode(bytes(b ^ kb for b in seg)).decode("ascii"))
-    seed = fnv1a(data)
+    seed = fnv1a(salt + data)
     disk = _shuffle(list(range(NSEG)), seed)
     order = [disk.index(e) for e in range(NSEG)]
     blobs_disk = [""] * NSEG
     for d_pos, exec_idx in enumerate(disk):
-        blobs_disk[d_pos] = blobs_exec[exec_idx]
+        b64 = blobs_exec[exec_idx]
+        blobs_disk[d_pos] = _rot(b64, salt[exec_idx] % (len(b64) or 1))
     sig_input = (TAG + "\n" + ",".join(map(str, order)) + "\n"
                  + "".join(blobs_exec)).encode("utf-8")
     sig = "%08x" % fnv1a(sig_input)
-    manifest = json.dumps({"o": order, "s": sig})
+    manifest = json.dumps({"o": order, "s": sig, "k": salt.hex()})
     return TAG + "\n" + manifest + "\n" + "\n".join(blobs_disk) + "\n"

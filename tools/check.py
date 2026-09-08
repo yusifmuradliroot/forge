@@ -77,7 +77,19 @@ def main():
                     else:
                         # M2: verify the signature itself (shape-only checks let
                         # sig regressions ship green -- the inverse-order saga).
+                        # Salted files (2.9+): unrotate disk blobs first.
                         ordered = [blobs[i] for i in m["o"]]
+                        if m.get("k"):
+                            try:
+                                salt = bytes.fromhex(m["k"])
+                                fixed = []
+                                for e, b in enumerate(ordered):
+                                    r = salt[e % len(salt)] % (len(b) or 1)
+                                    fixed.append(b[-r:] + b[:-r] if r else b)
+                                ordered = fixed
+                            except Exception as e:
+                                fails.append(f"pack: bad salt: {e}")
+                                return
                         want = "%08x" % fnv1a(("FS:2\n" + ",".join(map(str, m["o"]))
                                                     + "\n" + "".join(ordered)).encode())
                         if want != m["s"]:

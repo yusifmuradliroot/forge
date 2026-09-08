@@ -93,7 +93,10 @@ def run(code: str) -> str:
                 out.append(text)  # object key position — a call is invalid there
                 continue
             if len(value) >= MIN_LEN and all(ord(ch) < 128 for ch in value):
-                out.append('__f("' + _xor_hex(value) + '")')
+                # splitStrings: long literals become concatenated chunk calls.
+                # Same runtime value, scattered layout (cheap, AST-free).
+                chunks = [value[i:i + 16] for i in range(0, len(value), 16)]
+                out.append("+".join('__f("' + _xor_hex(c) + '")' for c in chunks))
                 changed = True
                 continue
             out.append(text)

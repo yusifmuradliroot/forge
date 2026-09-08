@@ -7,6 +7,16 @@ never change runtime behavior — only representation. Order:
 Shared machinery: `src/scan.py` (tokenizer + mask — the ONLY scanner anyone
 may use), `src/poison.py` (never-rename names, short only).
 
+## num — decimal ints to hex
+Token-based: only matches inside `other` tokens, so strings/regex/comments/
+templates are immune. Skips hex/octal-legacy/floats/exponents/BigInt and
+dot-glued digits (`a.5`). Same value, shorter spelling.
+
+## simp — safe micro-simplifications
+`true`→`!0`/`false`→`!1` (value positions only), safe-int folding, simple
+string concat, literal dead branches (char-exact spans; `else if` chains and
+methods literally named if/while are kept). Fixpoint, max 5 rounds.
+
 ## nolog — drop console.* statements
 - In: any valid JS. Out: same minus statement-position `console.*` calls.
 - Keeps: `keep-log` lines, expression uses (`x = f()`, ternary, `void`? no —
