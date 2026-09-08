@@ -47,3 +47,9 @@ zero deps, offline.
 ## Suggested order
 domainLock → per-file salt → self-tripwire → --seed → simplify-pass.
 Each is a minor version; each is independently verifiable by the battery.
+
+## Decision (owner, 2026-09-06): NO built-in domainLock
+Domain binding stays the developer's choice, not forge's: some scripts must
+run everywhere (adblock-style), some are site-bound. A built-in would force
+everyone into one model. Forge remains neutral; per-script locks (if wanted)
+live in consumer code. Item closed, not queued.
