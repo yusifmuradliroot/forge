@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """forge CLI: raw JS -> .fs (or processed .js). Usage:
-python3 tools/forge.py in.js out.fs [--passes nolog,strip,short,crypt,pack]
+python3 tools/forge.py in.js out.fs [--passes nolog,strip,short,num,simp,uni,crypt,pack]
 python3 tools/forge.py host.js out.js --passes nolog,strip,short,crypt --embed runner.js --embed-has ForgeScript --host
 python3 tools/forge.py in.js out.fs --audit [--yes]
-Default chain is nolog,strip,short,crypt,pack. pack is always forced last
+Default chain is nolog,strip,short,num,simp,uni,crypt,pack. pack is always forced last
 (and rejected in --host mode, where output must stay installable .js).
 --embed FILE inlines FILE at the /*__FORGE_RUNNER__*/ marker BEFORE passes run,
 so hosts ship with the runner processed inline. Passes run exactly once each;
@@ -17,7 +17,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
-DEFAULT = ["nolog", "strip", "short", "num", "simp", "crypt", "pack"]
+DEFAULT = ["nolog", "strip", "short", "num", "simp", "uni", "crypt", "pack"]
 
 
 def main():

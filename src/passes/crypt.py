@@ -13,55 +13,41 @@ Source already using __f aborts loudly.
 import re as _re
 
 MIN_LEN = 12
-STUB = ("var __f=function(s){var o='',i=0;for(;i<s.length;i+=2)"
-        "{o+=String.fromCharCode(parseInt(s.substr(i,2),16)^0x5A);}return o;};")
+STUB_TPL = ("var __f=function(s){var o='',i=0;for(;i<s.length;i+=2)"
+            "{o+=String.fromCharCode(parseInt(s.substr(i,2),16)^0x%02x);}return o;};")
 
 try:
-    from scan import tokenize
+    from scan import tokenize, template_inner_spans as _template_spans, sig_text as _sig_text
+    from seed import explicit_seed
 except ImportError:
     import os as _os
     import sys as _sys
     _sys.path.insert(0, _os.path.join(_os.path.dirname(__file__), ".."))
-    from scan import tokenize
+    from scan import tokenize, template_inner_spans as _template_spans, sig_text as _sig_text
+    from seed import explicit_seed
 
 
-def _xor_hex(s):
-    return "".join("%02x" % (ord(ch) ^ 0x5A) for ch in s)
+def _key():
+    """Per-build XOR base. Default (no FORGE_SEED) is the historic 0x5A, so
+    default builds stay diffable and every old .fs keeps running (each
+    file's stub carries its own key literal)."""
+    seed = explicit_seed()
+    if seed is None:
+        return 0x5A
+    return seed % 255 + 1
 
 
-def _sig_text(toks, idx, direction):
-    """Nearest significant token text in direction (-1/1), skipping comments."""
-    i = idx + direction
-    while 0 <= i < len(toks):
-        kind, text = toks[i]
-        if kind == "comment":
-            i += direction
-            continue
-        return text
-    return ""
+def _stub(key):
+    return STUB_TPL % key
 
 
-def _template_spans(toks):
-    """Token-index ranges living INSIDE template literals (opening backtick
-    chunk through closing one). A str token that starts like a real string
-    may be a template middle -- only ranges outside spans are encryptable."""
-    spans = []
-    depth = 0
-    start = None
-    for idx, (kind, text) in enumerate(toks):
-        if kind != "str":
-            continue
-        if not depth and text[:1] == "`" and not (len(text) > 1 and text[-1:] == "`"):
-            depth = 1
-            start = idx
-        elif depth and text[-1:] == "`":
-            depth = 0
-            spans.append((start, idx))
-    return spans
+def _xor_hex(s, key):
+    return "".join("%02x" % (ord(ch) ^ key) for ch in s)
 
 
 def run(code: str) -> str:
     toks = tokenize(code)
+    key = _key()
     in_tpl = set()
     for a, b in _template_spans(toks):
         for k in range(a, b + 1):
@@ -96,7 +82,7 @@ def run(code: str) -> str:
                 # splitStrings: long literals become concatenated chunk calls.
                 # Same runtime value, scattered layout (cheap, AST-free).
                 chunks = [value[i:i + 16] for i in range(0, len(value), 16)]
-                out.append("+".join('__f("' + _xor_hex(c) + '")' for c in chunks))
+                out.append("+".join('__f("' + _xor_hex(c, key) + '")' for c in chunks))
                 changed = True
                 continue
             out.append(text)
@@ -115,5 +101,5 @@ def run(code: str) -> str:
             result)
         cut = m.end(1)
         glue = "" if cut and result[cut:cut + 1] == ";" else ";"
-        result = result[:cut] + glue + STUB + result[cut:]
+        result = result[:cut] + glue + _stub(key) + result[cut:]
     return result

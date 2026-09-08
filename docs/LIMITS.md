@@ -20,7 +20,8 @@ compiler step. FS:2 segments are transport-level. Not oversold, not scheduled.
 - `eval("name")` / `with (obj)` + renamed locals: rename breaks them. Keep
   eval/with out of forged sources.
 - `export function f`: renamed (breaks importers). Forge targets bundles.
-- `import x from "..."`: a long specifier would be encrypted (bundles: none).
+- `import x from "..."`: the specifier would be escaped/encrypted (uni/crypt;
+  bundles have none — document).
 - Bare class fields (`class A { x = 1 }`): field names are not renamed
   (conservative), but external `.x` access patterns are out of scope.
 - Cross-file references: each file is renamed independently. Shared globals

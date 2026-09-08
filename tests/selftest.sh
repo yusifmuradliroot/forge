@@ -86,5 +86,47 @@ for src, keeps in probes:
 open('/tmp/st_probe.txt','w').write('PROBES ' + ('PASS' if bad == 0 else f'FAIL({bad})'))
 " || fail=1
 say "short probes" "$(cat /tmp/st_probe.txt)"
+python3 tools/forge.py tests/uni.js /tmp/st_uni.js --passes strip,uni --dev > /dev/null 2>&1 || fail=1
+node --check /tmp/st_uni.js > /dev/null 2>&1 || fail=1
+python3 -c "
+out = open('/tmp/st_uni.js').read()
+assert 'join room' not in out, 'short string leaked'
+assert '__tag' in out, 'marker lost'
+assert '\"plain\"' in out, 'object key lost'
+assert 'use strict' in out, 'directive lost'
+assert '\"b\"' in out, 'template middle lost'
+open('/tmp/st_uni.txt','w').write('UNI PASS')" || fail=1
+say "uni fixture" "$(cat /tmp/st_uni.txt)"
+python3 tools/forge.py tests/e2e.js /tmp/st_det1.fs > /dev/null 2>&1 || fail=1
+python3 tools/forge.py tests/e2e.js /tmp/st_det2.fs > /dev/null 2>&1 || fail=1
+FORGE_SEED=7 python3 tools/forge.py tests/e2e.js /tmp/st_seed1.fs > /dev/null 2>&1 || fail=1
+FORGE_SEED=7 python3 tools/forge.py tests/e2e.js /tmp/st_seed2.fs > /dev/null 2>&1 || fail=1
+python3 -c "
+a=open('/tmp/st_det1.fs').read(); b=open('/tmp/st_det2.fs').read()
+c=open('/tmp/st_seed1.fs').read(); d=open('/tmp/st_seed2.fs').read()
+assert a==b, 'default builds differ'
+assert c==d, 'seeded builds differ'
+assert a!=c, 'seed changed nothing'
+open('/tmp/st_det.txt','w').write('SEED-DET PASS')" || fail=1
+say "seed determinism" "$(cat /tmp/st_det.txt)"
+node -e "
+const fs=require('fs');
+eval(fs.readFileSync('src/runner/forgescript.js','utf8'));
+const logs=[]; const o=console.log; console.log=(...a)=>logs.push(a.join(' '));
+ForgeScript.run(fs.readFileSync('/tmp/st_seed1.fs','utf8'));
+console.log=o;
+if (logs[0]!=='hello packed world, this is a longer string 42') { console.log('SEEDED E2E MISMATCH'); process.exit(1); }
+console.log('E2E-SEED IDENTICAL');
+" > /tmp/st_seed.txt 2>&1 || fail=1
+say "seeded e2e" "$(tail -1 /tmp/st_seed.txt)"
+python3 tools/forge.py tests/e2e.js /tmp/st_bad.js --passes nope > /dev/null 2>&1 && fail=1
+python3 -c "
+import sys; sys.path.insert(0,'src'); from passes import pack
+try:
+    pack.run('')
+    print('EMPTY-FAIL')
+except ValueError:
+    open('/tmp/st_err.txt','w').write('ERR-PATHS PASS')" || fail=1
+say "error paths" "$(cat /tmp/st_err.txt)"
 [ $fail -eq 0 ] && echo "SELFTEST GREEN" || echo "SELFTEST RED"
 exit $fail

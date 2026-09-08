@@ -48,6 +48,16 @@ def main():
             fails.append("pack fnv1a vector mismatch (want bf9cf968)")
     except Exception as e:
         fails.append(f"pack fnv1a import failed: {e}")
+    try:
+        from seed import fnv1a as seed_fnv, explicit_seed, shuffled
+        if "%08x" % seed_fnv(b"foobar") != "bf9cf968":
+            fails.append("seed fnv1a vector mismatch (want bf9cf968)")
+        if explicit_seed() is not None:
+            fails.append("seed explicit_seed() must be None without FORGE_SEED")
+        if shuffled([1, 2, 3], 1) == [1, 2, 3] and shuffled([1, 2, 3, 4, 5], 1) == [1, 2, 3, 4, 5]:
+            fails.append("seed shuffled() looks like a no-op")
+    except Exception as e:
+        fails.append(f"seed import failed: {e}")
     sample = 'const greeting = "hello packed world"; // c\nconsole.log(greeting);\n'
     for name in passes:
         try:

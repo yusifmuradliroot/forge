@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## [2.10.0] — ELO round (ai-reports/2026-09-08-elo-gains-v1.md)
+- `crypt` per-build key: XOR base derives from FORGE_SEED (default stays
+  historic 0x5A, diffable; stub carries its own key literal, old files run).
+- `short` seed-shuffled assignment order under FORGE_SEED (default sorted).
+- New `uni` pass: short ASCII strings -> \xNN escapes (same skip-set as
+  crypt, disjoint by length). DEFAULT gains uni (simp -> uni -> crypt).
+- `src/seed.py`: single variance source; `scan.py` gains shared sig_text +
+  template_inner_spans (crypt + uni import ONE impl).
+- CI: GitHub workflow runs check + runner battery + selftest on push.
+- Selftest: uni fixture, seed determinism + seeded e2e, error-path probes.
+
 ## [2.9.0] — crypto + simplify round
 - Per-file salt (`"k"` in manifest): XOR schedule + shuffle derive from it;
   default salt = fnv(input) (diffable builds stay), FORGE_SEED=N overrides.

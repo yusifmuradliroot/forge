@@ -10,6 +10,7 @@ Everything else is left untouched. Strings, comments, regex, templates are opaqu
 """
 
 from scan import tokenize
+from seed import explicit_seed, shuffled
 from poison import find_poison
 
 
@@ -207,10 +208,16 @@ def run(code: str) -> str:
             n += 1
             yield s
 
+    order = sorted(candidates)
+    seed = explicit_seed()
+    if seed is not None:
+        # Seeded builds shuffle assignment order (same input, different
+        # renames per FORGE_SEED). Default path stays sorted (diffable).
+        order = shuffled(order, seed)
     mapping = {}
     taken = {t for _, t in idents}
     gen = name_gen()
-    for name in sorted(candidates):
+    for name in order:
         while True:
             cand = next(gen)
             if cand not in taken and cand not in RESERVED and cand not in GLOBALS:

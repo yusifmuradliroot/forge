@@ -32,6 +32,21 @@
   caught it. Lesson: every version bump MUST include README + CHANGELOG + WHEREWEARE
   in the same commit. Docs are part of "done".
 
+## 2026-09-08 — v2.10.0 ELO round (G1-G4 from elo-gains-v1)
+- Finding: 2.9.0 salted pack but crypt still XOR-0x5A static across ALL files.
+  Fix: per-build key via FORGE_SEED, default 0x5A (diffable), stub carries its
+  own key literal (old files unaffected). Default short output proven
+  byte-identical to 2.9.0 (old-vs-new differential on the same input).
+- short sorted+sequential renamed identically forever; FORGE_SEED now shuffles
+  assignment order (mangled-shuffled precedent, cheap form).
+- uni: short ASCII strings were plaintext; \xNN escapes with crypt's skip-set,
+  disjoint by length (<12). Non-ASCII skipped (unicode_escape round-trip unsafe).
+- scan.py gained sig_text + template_inner_spans; crypt imports them (its own
+  copies deleted) and uni shares them -- ONE scanner implementation per concept.
+- seed.py is the single variance source; pack keeps its proven copy untouched.
+- Declined again with cause: control-flow/VM/dead-code/HMAC/domainLock.
+  Predicted score 58 -> ~65 (names +1, strings +3, workflow +3).
+
 ## Working with this user
 - Approves fast ("ekle", "yaz", "evet", "devam") — execute immediately.
 - Strategic calls stay with user; max 2-3 options, recommend one.

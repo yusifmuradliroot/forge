@@ -197,3 +197,36 @@ def build_mask(code):
         else:
             out.append(text)
     return "".join(out)
+
+
+def sig_text(toks, idx, direction):
+    """Nearest significant token text in direction (-1/1), skipping comments.
+    Shared by crypt + uni (single implementation, never one per pass)."""
+    i = idx + direction
+    while 0 <= i < len(toks):
+        kind, text = toks[i]
+        if kind == "comment":
+            i += direction
+            continue
+        return text
+    return ""
+
+
+def template_inner_spans(toks):
+    """Token-index ranges living INSIDE template literals (opening backtick
+    chunk through closing one). A str token that starts like a real string
+    may be a template middle -- only ranges outside spans are encryptable.
+    Shared by crypt + uni (single implementation, never one per pass)."""
+    spans = []
+    depth = 0
+    start = None
+    for idx, (kind, text) in enumerate(toks):
+        if kind != "str":
+            continue
+        if not depth and text[:1] == "`" and not (len(text) > 1 and text[-1:] == "`"):
+            depth = 1
+            start = idx
+        elif depth and text[-1:] == "`":
+            depth = 0
+            spans.append((start, idx))
+    return spans

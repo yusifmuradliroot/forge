@@ -2,9 +2,12 @@
 
 ## Goal
 JS protection layer, general purpose and independent. Pipeline v2:
-nolog → strip → short → crypt → pack (FS:2). Open-source release possible later.
+nolog → strip → short → num → simp → uni → crypt → pack (FS:2).
+Open-source release possible later.
 
 ## Done
+- v2.10.0: ELO round (elo-gains report Q1-Q4) — crypt per-build key, short
+  seed-shuffle, uni pass, src/seed.py, shared scan helpers, CI, selftest probes.
 - v2.9.0: num + simp passes (hex ints, !0/!1, folding, dead branches).
 - v2.8.0: re-audit fixes (template crypt, stub glue, poison generators,
   tiny-pack abort, audit sinks, PASSES + QUICKSTART docs).

@@ -1,7 +1,7 @@
 # forge
 
 JS protection layer: raw JS in → `.fs` data file out, executed by the forgescript runner.
-Private. Minimal by design. Current: 2.9.0 (`FS:2` segmented format, runner v4).
+Private. Minimal by design. Current: 2.10.0 (`FS:2` segmented format, runner v4).
 
 > Trust model (read first): the `.fs` signature proves the file was not
 > ACCIDENTALLY damaged. It proves NOTHING about who made it — the format,
@@ -12,7 +12,7 @@ Private. Minimal by design. Current: 2.9.0 (`FS:2` segmented format, runner v4).
 ## Pipeline
 
 ```
-in.js ──► nolog ──► strip ──► short ──► num ──► simp ──► crypt ──► pack ──► out.fs ──► forgescript runner
+in.js ──► nolog ──► strip ──► short ──► num ──► simp ──► uni ──► crypt ──► pack ──► out.fs ──► forgescript runner
 ```
 
 nolog strips `console.*` statements (`keep-log` lines survive). Passes run in
