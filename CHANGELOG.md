@@ -2,7 +2,11 @@
 
 ## [Unreleased]
 
-## [2.9.0] — simplify round (num + simp passes, DEFAULT extended)
+## [2.9.0] — crypto + simplify round
+- Per-file salt (`"k"` in manifest): XOR schedule + shuffle derive from it;
+  default salt = fnv(input) (diffable builds stay), FORGE_SEED=N overrides.
+  Segment rotation on disk. Runner v5 reads both, legacy files keep working.
+- `num`: decimal ints -> hex (token-based; floats/exponents/BigInt/dotted safe).
 - `num`: decimal ints -> hex (token-based; floats/exponents/BigInt/dotted safe).
 - `simp`: true->!0/false->!1, safe-int folding, string concat, literal dead
   branches (char-exact spans; else-if chains + if/while-named methods kept).
