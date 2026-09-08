@@ -28,7 +28,8 @@ Open-source release possible later.
 - Device: mobile, Firefox-based. Console: AVAILABLE for now (past logs received).
 
 ## In progress
-- (none — v2.3.0 shipped; consumer integrations live outside this repo)
+- Safe-max report shipped (ai-reports/2026-09-08-safe-max-v1.md): ceiling
+  ~78/100, innovation catalog F1/S1/S2/N1/Z1/T1/W1. Next: owner picks batch.
 
 ## Next (trigger-based — NOT scheduled)
 - v3 chunked execution (never full plaintext in memory; needs scope-aware splitter).
