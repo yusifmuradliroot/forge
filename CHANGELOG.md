@@ -1,6 +1,10 @@
 # Changelog
 
 ## [Unreleased]
+- `selftest.sh`: portable scratch dir (`.selftest-tmp/` under the repo,
+  cleaned on exit) instead of hardcoded `/tmp/st_*`. Windows-native
+  python/node cannot resolve MSYS `/tmp` paths, so the battery never
+  passed on `windows-latest` (ubuntu was green). No build output change.
 
 ## [2.12.0] — public release (behavior fixes + open-source packaging)
 - License: custom source-available -> MIT. Internal files removed from the

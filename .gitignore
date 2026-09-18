@@ -19,3 +19,6 @@ __pycache__/
 # Built outputs (never commit forged artifacts from the tour)
 hello.fs
 hello.dev.js
+
+# Selftest scratch dir (portable, relative -- see tests/selftest.sh)
+.selftest-tmp/
