@@ -1,7 +1,7 @@
 # forge
 
 ![selftest](https://github.com/yusifmuradliroot/forge/actions/workflows/selftest.yml/badge.svg)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![License: Custom (attribution + takedown)](https://img.shields.io/badge/License-Custom-blue.svg)](LICENSE)
 
 JS protection layer: raw JS in → `.fs` data file out, executed by the forgescript runner.
 Minimal by design. Current: 2.12.0 (`FS:2` segmented format, runner v5).

@@ -34,13 +34,15 @@ def main():
                 fails.append(f"pyproject.toml does not mention VERSION {ver} (version rides with the bump)")
         except Exception as e:
             fails.append(f"pyproject.toml unreadable: {e}")
-    # Public hygiene: private license + internal memory must never ship.
+    # Public hygiene: the custom license (attribution + takedown) must ship,
+    # and internal memory must never ship.
     try:
         lic = (ROOT / "LICENSE").read_text(encoding="utf-8")
-        if "NO PUBLIC USE" in lic or "TAKEDOWN" in lic:
-            fails.append("LICENSE is still private (swap to MIT before sharing)")
-        if "MIT License" not in lic:
-            fails.append("LICENSE does not look like MIT")
+        if "NO PUBLIC USE" in lic:
+            fails.append("LICENSE still forbids public use (see section 1)")
+        for keep in ("ATTRIBUTION", "TAKEDOWN ON DEMAND", "yusifmuradliroot/forge"):
+            if keep not in lic:
+                fails.append(f"LICENSE missing {keep!r} (attribution + takedown required)")
     except Exception as e:
         fails.append(f"LICENSE unreadable: {e}")
     for private in ("AGENTS.md", "AI", "ai-reports"):

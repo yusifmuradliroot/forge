@@ -7,7 +7,7 @@ name = "forge-js"
 version = "2.12.0"
 description = "Minimal JS protection layer: raw JS in, encrypted .fs data out"
 readme = "README.md"
-license = { text = "MIT" }
+license = { text = "Custom (attribution + takedown on demand), see LICENSE" }
 requires-python = ">=3.8"
 keywords = ["javascript", "obfuscation", "build-tools", "compiler"]
 classifiers = [

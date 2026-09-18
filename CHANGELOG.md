@@ -1,6 +1,9 @@
 # Changelog
 
 ## [Unreleased]
+- License: MIT -> FORGE CUSTOM LICENSE (inspect, customize and use freely,
+  with mandatory attribution; the attributed part must be removed on the
+  author's request). `check.py` enforces the new license markers.
 - `selftest.sh`: portable scratch dir (`.selftest-tmp/` under the repo,
   cleaned on exit) instead of hardcoded `/tmp/st_*`. Windows-native
   python/node cannot resolve MSYS `/tmp` paths, so the battery never
