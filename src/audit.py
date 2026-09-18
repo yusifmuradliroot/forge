@@ -1,8 +1,10 @@
 """audit.py: report risky constructs in RAW sources before forging.
 
-Raw .js hides things eyes miss (leftover logs, eval, sinks). --audit lists
-them with line numbers; the build continues only on approval. keep-log lines
-are shown as KEPT (banner/probe must survive on purpose).
+Raw .js hides things eyes miss (leftover logs, eval, sinks, module/export
+shape, with). --audit lists them with line numbers; the build continues only
+on approval. keep-log lines are shown as KEPT (banner/probe must survive on
+purpose). `export` is reported because forged bundles keep export names
+verbatim (importers must match); `with` because it blocks renaming inside.
 """
 
 import re
@@ -20,6 +22,8 @@ _PATTERNS = [
     ("outerHTML", re.compile(r"\bouterHTML\b")),
     ("insertAdjacentHTML", re.compile(r"\binsertAdjacentHTML\b")),
     ("document.write", re.compile(r"\bdocument\s*\.\s*write(ln)?\b")),
+    ("export", re.compile(r"(?<![\w$.])export\b")),
+    ("with", re.compile(r"(?<![\w$.])with\s*\(")),
 ]
 
 

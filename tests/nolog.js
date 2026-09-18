@@ -6,5 +6,6 @@ else console.warn('dangling else');
 while (y) console.log('dangling while');
 y ? console.log('ternary') : z;
 const q = console.log('expr') + 1;
+void console.log('void-stripped');
 // console.log('in comment');
 console.log('%cBANNER', 'color:red'); // keep-log

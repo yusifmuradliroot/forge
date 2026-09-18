@@ -50,6 +50,16 @@ def _xor_hex(s, key):
     return "".join("%02x" % (ord(ch) ^ key) for ch in s)
 
 
+def _is_tpl_middle(toks, idx):
+    """True if a real-looking quoted token is template literal TEXT between
+    `}` and `${` (e.g. `a${x}"b"${y}c`). Such middles must stay verbatim --
+    an `__f()` call there is a syntax error. Live `${}` code (prev `+`/`${`
+    etc.) returns False and stays encryptable."""
+    prev_t = _sig_text(toks, idx, -1).rstrip()
+    next_t = _sig_text(toks, idx, 1).lstrip()
+    return prev_t.endswith("}") and next_t.startswith("${")
+
+
 def run(code: str) -> str:
     toks = tokenize(code)
     key, chunk_len, table_name, fn_name, upper = _params()
@@ -62,7 +72,11 @@ def run(code: str) -> str:
     keep = keep_values()
     for idx, (kind, text) in enumerate(toks):
         if idx in in_tpl:
-            continue
+            if not (kind == "str" and text[:1] in ("'", '"')
+                    and len(text) >= 2 and text[-1:] == text[:1]):
+                continue
+            if _is_tpl_middle(toks, idx):
+                continue
         if kind == "str" and text[:1] in ("'", '"') and len(text) >= 2 and text[-1:] == text[:1]:
             body = text[1:-1]
             try:

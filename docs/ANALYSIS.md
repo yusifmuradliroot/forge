@@ -2,8 +2,7 @@
 
 This file described v1.0.0 theory (FS:1 tag, pending v2 list). Everything in its v2 work list shipped (FS:2 segments, signature,
 per-segment keys, dev mode). Kept verbatim below for history; for the
-current model read `FORMAT.md` (spec), `LIMITS.md` (honest limits) and
-`../ai-reports/2026-09-06-deep-audit-v2.5.0.md` (findings).
+current model read `FORMAT.md` (spec) and `LIMITS.md` (honest limits).
 
 ---
 

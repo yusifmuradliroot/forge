@@ -156,7 +156,6 @@ def _span_at(toks, offs, pos):
     """Balance-match the group opening exactly at char offset pos.
     Returns (inner_text, end_char_excl) or None. Strings/regex/comments are
     opaque (token-aware), so brackets inside them never count."""
-    import bisect
     n = len(toks)
     chars = "".join(t[1] for t in toks)
     N = len(chars)

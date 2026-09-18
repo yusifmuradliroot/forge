@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """forge integrity checker. One run, clear verdict.
 Usage: python3 tools/check.py
-Exit 0 = PASS, 1 = FAIL. Fix what it reports (max 2 rounds), then ask the user.
+Exit 0 = PASS, 1 = FAIL. Fix what it reports and re-run until green.
 """
 import importlib
 import sys
@@ -28,6 +28,53 @@ def main():
                     fails.append(f"{doc} does not mention VERSION {ver} (docs ride with the bump)")
             except Exception as e:
                 fails.append(f"{doc} unreadable: {e}")
+        try:
+            pyproj = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+            if ver not in pyproj:
+                fails.append(f"pyproject.toml does not mention VERSION {ver} (version rides with the bump)")
+        except Exception as e:
+            fails.append(f"pyproject.toml unreadable: {e}")
+    # Public hygiene: private license + internal memory must never ship.
+    try:
+        lic = (ROOT / "LICENSE").read_text(encoding="utf-8")
+        if "NO PUBLIC USE" in lic or "TAKEDOWN" in lic:
+            fails.append("LICENSE is still private (swap to MIT before sharing)")
+        if "MIT License" not in lic:
+            fails.append("LICENSE does not look like MIT")
+    except Exception as e:
+        fails.append(f"LICENSE unreadable: {e}")
+    for private in ("AGENTS.md", "AI", "ai-reports"):
+        if (ROOT / private).exists():
+            fails.append(f"{private} must not ship in the public repo (internal memory)")
+    if not (ROOT / ".gitattributes").is_file():
+        fails.append("missing .gitattributes (Windows CRLF breaks FS:2)")
+    else:
+        ga = (ROOT / ".gitattributes").read_text(encoding="utf-8")
+        if "eol=lf" not in ga:
+            fails.append(".gitattributes must force eol=lf")
+    # Regression vectors for the 2.12.0 fixes (must stay green).
+    try:
+        from passes import nolog as _nolog
+        if _nolog.run("void console.log(1);").strip() != ";":
+            fails.append("nolog: void console leaves invalid code (want ';')")
+    except Exception as e:
+        fails.append(f"nolog void vector failed: {e}")
+    try:
+        from passes import crypt as _crypt
+        inner = _crypt.run("var a=`x${y+\"this is a very long string value\"}w`;")
+        if "__f(" not in inner:
+            fails.append("crypt: live ${} string not encrypted")
+        middle = _crypt.run("var t=`a${x}\"b\"${y}c`;")
+        if "\"b\"" not in middle:
+            fails.append("crypt: template middle corrupted")
+    except Exception as e:
+        fails.append(f"crypt template vector failed: {e}")
+    try:
+        from poison import find_poison as _poison
+        if "f" not in _poison("export function f(a){return a+1}"):
+            fails.append("poison: exported function name not protected")
+    except Exception as e:
+        fails.append(f"poison export vector failed: {e}")
     runner = ROOT / "src" / "runner" / "forgescript.js"
     if not runner.is_file():
         fails.append("missing src/runner/forgescript.js")

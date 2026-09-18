@@ -1,27 +1,21 @@
-CUSTOM SOURCE-AVAILABLE LICENSE
-Copyright (c) 2026 yusifmuradliroot. All rights reserved.
+MIT License
 
-1. READ AND LEARN
-   You may read, study, and learn from the contents of this repository.
-   This repository is read-only for learning purposes.
+Copyright (c) 2026 yusifmuradliroot
 
-2. NO PUBLIC USE
-   You may NOT use anything from this repository — in whole or in part —
-   to create, publish, distribute, or share any script, tool, or software
-   that other people can use. Public releases derived from this repository
-   are strictly prohibited.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-3. PERSONAL USE ONLY
-   You may create scripts for your own personal use only, provided they do
-   not disrupt, disturb, harm, or negatively affect other users in any way.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-4. TAKEDOWN ON DEMAND
-   Anything created using this repository must be deleted upon the author's
-   request, without exception and without delay.
-
-5. NO WARRANTY
-   This repository is provided "as is", without warranty of any kind.
-   The author is not liable for any claim, damages, or other liability
-   arising from the use of this repository.
-
-Additional terms may be added to this license at any time.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

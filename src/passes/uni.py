@@ -11,6 +11,14 @@ from scan import tokenize, template_inner_spans, sig_text
 from seed import keep_values
 
 
+def _is_tpl_middle(toks, idx):
+    """Same rule as crypt: real-looking quoted token that is template TEXT
+    between `}` and `${` stays verbatim; live `${}` code stays escapable."""
+    prev_t = sig_text(toks, idx, -1).rstrip()
+    next_t = sig_text(toks, idx, 1).lstrip()
+    return prev_t.endswith("}") and next_t.startswith("${")
+
+
 def run(code: str) -> str:
     toks = tokenize(code)
     keep = keep_values()
@@ -21,8 +29,13 @@ def run(code: str) -> str:
     out = []
     for idx, (kind, text) in enumerate(toks):
         if idx in in_tpl:
-            out.append(text)
-            continue
+            if not (kind == "str" and text[:1] in ("'", '"')
+                    and len(text) >= 2 and text[-1:] == text[:1]):
+                out.append(text)
+                continue
+            if _is_tpl_middle(toks, idx):
+                out.append(text)
+                continue
         if kind == "str" and text[:1] in ("'", '"') and len(text) >= 2 and text[-1:] == text[:1]:
             body = text[1:-1]
             if "\\" in body:

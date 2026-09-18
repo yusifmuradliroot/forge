@@ -13,6 +13,9 @@ FS:2
 - Segments: stage output as UTF-8 bytes, split in thirds (reassembly is byte-exact,
   split points irrelevant). Disk order is a deterministic shuffle (FNV-seeded) —
   same input always yields the same file (diffable builds).
+- Line endings are always LF (`\n`). The CLI normalizes CRLF inputs to LF on
+  read and writes LF (see `.gitattributes`); a stray `\r` in the tag line
+  (`FS:2\r`) is refused like any unknown tag.
 - Per-exec-index key: `kb = 0x5A ^ ((e*31+7) % 256)`, XOR over bytes, then base64.
 - `sig = fnv1a32hex("FS:2\\n" + order.join(",") + "\\n" + blobs-in-exec-order)`.
   Runner verifies BEFORE decrypting; mismatch → refuse, run nothing.

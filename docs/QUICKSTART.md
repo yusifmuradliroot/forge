@@ -1,7 +1,8 @@
 # QUICKSTART — first build in 5 minutes
 
 Needs: `python3` (3.8+) for the tool, `node` (any live version) to verify.
-Make the command executable once: `chmod +x forge`.
+Make the command executable once: `chmod +x forge` (Unix; on Windows Git Bash
+call `python3 tools/forge.py` directly). Full setup: `docs/INSTALL.md`.
 
 ## 1. Build the example
 

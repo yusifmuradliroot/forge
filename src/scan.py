@@ -1,9 +1,9 @@
 """scan.py: the single shared JS scanner (strings, templates+${}, regex, comments).
 
 All passes MUST scan through this module — three divergent reimplementations
-of the same scan caused the strip/nolog/short bug family (see ai-reports).
-Kinds: ident/str/regex/comment/other. Template ${} bodies are emitted as
-inner tokens (recursed), so passes see template expressions as code.
+of the same scan once caused the strip/nolog/short bug family (see CHANGELOG
+2.6.0/2.8.0). Kinds: ident/str/regex/comment/other. Template ${} bodies are
+emitted as inner tokens (recursed), so passes see template expressions as code.
 """
 
 def tokenize(code):

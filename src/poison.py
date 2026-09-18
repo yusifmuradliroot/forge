@@ -69,7 +69,7 @@ def _is_decl_keyword(mask, i, word):
     prev = _prev_sig(mask, i - 1)
     if prev in (".",):
         return False
-    if prev.isalnum() or prev in "_$":
+    if prev and (prev.isalnum() or prev in "_$"):
         return False
     j = i + len(word)
     if j < len(mask) and (mask[j].isalnum() or mask[j] in "_$"):
@@ -177,6 +177,52 @@ def find_poison(code):
                                                ("of", "in"), for_head=True)
                         continue
                     i = j + 1
+                    continue
+            if word == "export" and _is_decl_keyword(mask, i, word):
+                j = m.end()
+                while j < n and mask[j] in " \t\n":
+                    j += 1
+                w2 = _IDENT_RE.match(mask, j)
+                if w2 and w2.group(0) == "default":
+                    j = w2.end()
+                    while j < n and mask[j] in " \t\n":
+                        j += 1
+                    w3 = _IDENT_RE.match(mask, j)
+                    if w3 and w3.group(0) in ("function", "class"):
+                        j = w3.end()
+                        while j < n and mask[j] in " \t\n":
+                            j += 1
+                        w4 = _IDENT_RE.match(mask, j)
+                        if w4:
+                            poison.add(w4.group(0))
+                            i = w4.end()
+                            continue
+                    i = j
+                    continue
+                if w2 and w2.group(0) in ("function", "class"):
+                    j = w2.end()
+                    while j < n and mask[j] in " \t\n":
+                        j += 1
+                    if j < n and mask[j] == "*":
+                        j += 1
+                        while j < n and mask[j] in " \t\n":
+                            j += 1
+                    w3 = _IDENT_RE.match(mask, j)
+                    if w3:
+                        poison.add(w3.group(0))
+                        i = w3.end()
+                        continue
+                    i = j
+                    continue
+                if w2 and w2.group(0) in ("var", "let", "const"):
+                    e = _parse_declarators(mask, w2.end(), set(), ())
+                    _poison_span(mask, w2.end(), e, poison)
+                    i = e
+                    continue
+                if j < n and mask[j] == "{":
+                    e = _skip_balanced(mask, j)
+                    _poison_span(mask, j, e, poison)
+                    i = e
                     continue
             if word == "catch":
                 j = m.end()

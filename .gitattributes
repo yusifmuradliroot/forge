@@ -1,0 +1,8 @@
+# Force LF on checkout (Windows CRLF breaks FS:2 tag + runner checks).
+* text=auto eol=lf
+*.py text eol=lf
+*.js text eol=lf
+*.sh text eol=lf
+*.md text eol=lf
+*.fs text eol=lf
+forge text eol=lf

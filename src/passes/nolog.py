@@ -94,6 +94,26 @@ def _call_end(mask, i):
     return -1, False
 
 
+def _void_start(mask, i):
+    """Index of a `void` keyword directly preceding console at i (spaces/tabs
+    only between), else -1. `void console.log(x);` must go as a whole --
+    leaving `void ;` behind is a SyntaxError."""
+    k = i - 1
+    while k >= 0 and mask[k] in " \t":
+        k -= 1
+    e = k + 1
+    while k >= 0 and (mask[k].isalnum() or mask[k] in "_$"):
+        k -= 1
+    if mask[k + 1:e] == "void":
+        q = k
+        while q >= 0 and mask[q] in " \t\n":
+            q -= 1
+        prev = mask[q] if q >= 0 else ";"
+        if q < 0 or prev in ";\n{}" or prev == ")":
+            return k + 1
+    return -1
+
+
 def run(code: str) -> str:
     mask, comments = _mask(code)
     keep_lines = {ln for ln, tx in comments if "keep-log" in tx}
@@ -104,6 +124,9 @@ def run(code: str) -> str:
             j, semi = _call_end(mask, i)
             if j > i and (semi or _next_ok(mask, j)):
                 if _line_of(code, j) not in keep_lines and _line_of(code, i) not in keep_lines:
+                    vs = _void_start(mask, i)
+                    if vs >= 0:
+                        del out[len(out) - (i - vs):]
                     out.append(";")
                     i = j
                     continue

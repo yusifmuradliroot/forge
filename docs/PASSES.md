@@ -31,9 +31,10 @@ methods literally named if/while are kept). Fixpoint, max 5 rounds.
 
 ## nolog — drop console.* statements
 - In: any valid JS. Out: same minus statement-position `console.*` calls.
-- Keeps: `keep-log` lines, expression uses (`x = f()`, ternary, `void`? no —
-  `void` IS stripped), property access (`o.console`), template/comment/regex
-  contents, `${}` inner code follows the same rules.
+- Keeps: `keep-log` lines, expression uses (`x = console.log(..)`, ternary),
+  property access (`o.console`), template/comment/regex contents, `${}` inner
+  code follows the same rules.
+- `void console.*(...)` goes as a whole (leaving `void ;` would be invalid).
 - Replaces removals with `;` (dangling `if (c)` bodies stay valid).
 - Runs FIRST (needs comments for keep-log).
 
@@ -45,8 +46,9 @@ methods literally named if/while are kept). Fixpoint, max 5 rounds.
 - Renames ONLY names declared exactly once (var/let/const/function/param/
   catch, incl. named + generator + anonymous params) that never appear as
   property, object key, shorthand, method, destructured name, after `new`,
-  or in GLOBALS/RESERVED/poisoned sets. Cross-file contract names
-  (`ForgeScript`) are GLOBALS.
+  `export` binding, or in GLOBALS/RESERVED/poisoned sets. Cross-file contract
+  names (`ForgeScript`) are GLOBALS. `export` names stay verbatim so
+  importers keep working (forge still targets bundles; `--audit` flags them).
 - Number-adjacent letters are numeric suffixes (`123n`, `1e5`), never idents.
 - Regex/division disambiguated with pending-buffer lookbehind.
 - With FORGE_SEED set, assignment order shuffles (same input, different
@@ -58,14 +60,16 @@ methods literally named if/while are kept). Fixpoint, max 5 rounds.
 ## uni — short strings to \xNN escapes
 - Only real `'...'`/`"..."` tokens with pure-ASCII values shorter than 12
   chars (crypt's half starts at 12 — disjoint by length, order irrelevant).
-  Same value on the wire, no readable words on disk.
+  Same value on the wire, no readable words on disk. Live `${}` strings are
+  escaped; template TEXT middles stay verbatim.
 - Same skip-set as crypt: template middles, `__*` markers, directives,
   object-key position, non-ASCII values.
 
 ## crypt — encrypt long string literals into a shuffled table
-- Only real `'...'`/`"..."` tokens, length ≥ 12, ASCII-only. Skips templates
-  (incl. middles that merely LOOK like strings), `__*` markers, directives,
-  object-key position, short strings.
+- Only real `'...'`/`"..."` tokens, length ≥ 12, ASCII-only. Live `${}`
+  strings are encrypted; template TEXT middles between `}` and `${` stay
+  verbatim (a call there would be a syntax error). Skips `__*` markers,
+  directives, object-key position, short strings.
 - Output is ONE hex table + index-call decoder (`var __t=[..];var
   __f=function(i){..};` + `__f(3)+__f(0)` chains) after a directive prologue.
 - Table order shuffles per FORGE_SEED (default: encounter order, diffable).

@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## [2.12.0] — public release (behavior fixes + open-source packaging)
+- License: custom source-available -> MIT. Internal files removed from the
+  repo (`AGENTS.md`, `AI/`, `ai-reports/`); `.gitattributes` forces LF
+  (Windows CRLF broke the FS:2 tag); `pyproject.toml` metadata (same version).
+- `nolog`: `void console.*` is removed as a whole (was `void ;` SyntaxError).
+- `crypt`/`uni`: live `${}` strings are now encrypted/escaped; template TEXT
+  middles between `}` and `${` stay verbatim (was: everything skipped).
+- `short`/`poison`: `export` bindings keep their names (`export function f`,
+  `export const x`, `export {a}`); importer contract preserved. File-start
+  keyword boundary fixed (`"" in "_$"` always-true guard).
+- `forge.py`: CRLF inputs normalized to LF; output always LF (Windows builds
+  byte-identical to Linux). `simp.py`: redundant inner import removed.
+- `audit`: also reports `export` and `with` (rename-relevant, review first).
+- Tests: `export.js`, `tpl_inner.js` fixtures + export/tpl-runtime/CRLF probes;
+  `nolog.js` gains the void case. Battery is 21 probes, all green.
+- Docs: `INSTALL.md`, `USAGE.md`, `FAQ.md`, `SUPPORT.md`, `SECURITY.md`;
+  README/LIMITS/FORMAT/PASSES updated (2.12.0, no internal references).
+- `check.py`: enforces MIT license, no internal dirs, `.gitattributes`,
+  pyproject version ride, and regression vectors (void/template/export).
+
 ## [2.11.2] — public-ready packaging (no behavior change to builds)
 - `./forge` command wrapper (repo root; same as `python3 tools/forge.py`).
 - `examples/hello.js` + 5-minute QUICKSTART (build → run → dev → guards).
@@ -16,7 +36,7 @@
   (j-obfuscator `reservedStrings` precedent). Unset by default: default
   builds byte-identical to 2.11.0. Selftest KEEP probe.
 
-## [2.11.0] "golden gate era" — safe-max batch 1 (ai-reports/2026-09-08-safe-max-v1.md)
+## [2.11.0] "golden gate era" — safe-max batch 1
 - New `flow` pass (F1): comma-join, negation-flip, while-true -> for(;;).
   Text-only, zero runtime cost. Chain: num -> flow -> simp.
 - `crypt` string table (S1): ONE shuffled hex table + index calls instead
@@ -30,7 +50,7 @@
   per candidate): 230KB adversarial input 15s -> 0.35s, same output.
 - CI runs on ubuntu + windows (bash). Selftest: flow/scope/gate probes.
 
-## [2.10.0] — ELO round (ai-reports/2026-09-08-elo-gains-v1.md)
+## [2.10.0] — string + determinism round
 - `crypt` per-build key: XOR base derives from FORGE_SEED (default stays
   historic 0x5A, diffable; stub carries its own key literal, old files run).
 - `short` seed-shuffled assignment order under FORGE_SEED (default sorted).
@@ -51,7 +71,7 @@
   branches (char-exact spans; else-if chains + if/while-named methods kept).
 - DEFAULT is now nolog,strip,short,num,simp,crypt,pack.
 
-## [2.8.0] — re-audit fixes (ai-reports/2026-09-06-forge-reaudit-2.7.2.md)
+## [2.8.0] — re-audit fixes
 - crypt token-based: template-middle quotes no longer encrypted (was silent
   corruption); stub after directive prologue even without semicolon; __f
   collision check ignores comments/strings.
@@ -79,7 +99,7 @@
   source with line numbers, builds only on approval (`--yes` to skip prompt).
   keep-log lines shown as KEPT. Catches what eyes miss before it ships.
 
-## [2.6.0] — deep-audit fixes (see ai-reports/2026-09-06-deep-audit-v2.5.0.md)
+## [2.6.0] — deep-audit fixes
 - CRITICAL runner v4: concat-then-decode (per-segment TextDecoder corrupted
   split multibyte chars, invisibly). Multibyte battery (all 6 orders).
 - HIGH short: never rename destructured/shorthand/method/BigInt-suffix names
@@ -97,7 +117,7 @@
 
 ## [2.4.0]
 - FS:1 support REMOVED: runner v3 refuses unsigned legacy payloads (era archive since removed)
-- Voyager gate already FS:2-only; rebuild hosts to carry runner v3
+- Hosts are FS:2-only since runner v3; rebuild hosts to carry runner v3
 
 ## [2.3.0]
 - `--host` mode: userscript hosts (header preserved, pack rejected, single command)

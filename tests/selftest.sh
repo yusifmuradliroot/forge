@@ -1,5 +1,5 @@
 #!/bin/bash
-# forge selftest (L13): one command runs the whole battery. Exit 0 = green.
+# forge selftest: one command runs the whole battery. Exit 0 = green.
 # Usage: bash tests/selftest.sh
 set -u
 cd "$(dirname "$0")/.." || exit 1
@@ -48,6 +48,7 @@ from passes import nolog
 out = open('/tmp/st_nl.js').read()
 assert 'BANNER' in out, 'keep-log lost'
 assert 'strip me' not in out and 'dangling' not in out, 'statement logs leaked'
+assert 'void-stripped' not in out and 'void ;' not in out, 'void console left invalid code'
 assert 'console.log' in out, 'expression uses must survive (ternary/expr kept by design)'
 open('/tmp/st_nolog.txt','w').write('NOLOG PASS')" || fail=1
 say "nolog fixture" "$(cat /tmp/st_nolog.txt)"
@@ -191,5 +192,41 @@ out = open('/tmp/st_keep.js').read()
 assert '\"join room\"' in out, 'reserved string escaped'
 open('/tmp/st_keep.txt','w').write('KEEP PASS')" || fail=1
 say "keep reserve" "$(cat /tmp/st_keep.txt)"
+python3 tools/forge.py tests/export.js /tmp/st_export.out.js --passes strip,short --dev > /dev/null 2>&1 || fail=1
+node --check /tmp/st_export.out.js > /dev/null 2>&1 || fail=1
+python3 -c "
+out = open('/tmp/st_export.out.js').read()
+assert 'export function kept_fn' in out, 'exported fn renamed (importers break)'
+assert 'export const kept_val' in out, 'exported const renamed (importers break)'
+assert 'local_add' not in out, 'local not shortened'
+open('/tmp/st_export.txt','w').write('EXPORT PASS')" || fail=1
+say "export names" "$(cat /tmp/st_export.txt)"
+python3 tools/forge.py tests/tpl_inner.js /tmp/st_tpl.out.js --passes strip,crypt --dev > /dev/null 2>&1 || fail=1
+node --check /tmp/st_tpl.out.js > /dev/null 2>&1 || fail=1
+python3 -c "
+out = open('/tmp/st_tpl.out.js').read()
+assert '__f(' in out, 'live \${} string not encrypted'
+assert '\`a\${who}\"b\"\${who}c\`' in out, 'template middle corrupted'
+open('/tmp/st_tpl.txt','w').write('TPL-INNER PASS')" || fail=1
+say "tpl inner" "$(cat /tmp/st_tpl.txt)"
+node -e "
+const fs=require('fs');
+const logs=[]; const o=console.log; console.log=(...a)=>logs.push(a.join(' '));
+eval(fs.readFileSync('tests/tpl_inner.js','utf8')); const want=logs.slice(); logs.length=0;
+eval(fs.readFileSync('/tmp/st_tpl.out.js','utf8')); const got=logs.slice(); console.log=o;
+if (JSON.stringify(want)!==JSON.stringify(got)) { console.log('TPL-RUNTIME MISMATCH'); process.exit(1); }
+console.log('TPL-RUN IDENTICAL');
+" > /tmp/st_tplrun.txt 2>&1 || fail=1
+say "tpl runtime" "$(tail -1 /tmp/st_tplrun.txt)"
+python3 -c "
+open('/tmp/st_crlf.js','wb').write(open('tests/e2e.js','rb').read().replace(b'\n', b'\r\n'))
+" || fail=1
+python3 tools/forge.py tests/e2e.js /tmp/st_lf.fs > /dev/null 2>&1 || fail=1
+python3 tools/forge.py /tmp/st_crlf.js /tmp/st_crlf.fs > /dev/null 2>&1 || fail=1
+python3 -c "
+a=open('/tmp/st_lf.fs').read(); b=open('/tmp/st_crlf.fs').read()
+assert a==b, 'CRLF input built different .fs (Windows breakage)'
+open('/tmp/st_crlf.txt','w').write('CRLF PASS')" || fail=1
+say "crlf normalize" "$(cat /tmp/st_crlf.txt)"
 [ $fail -eq 0 ] && echo "SELFTEST GREEN" || echo "SELFTEST RED"
 exit $fail

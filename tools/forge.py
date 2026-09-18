@@ -64,6 +64,10 @@ def main():
         names = [p for p in names if p != "pack"] + ["pack"]
 
     code = Path(args.src).read_text(encoding="utf-8")
+    # Normalize CRLF (Windows checkout) to LF: the FS:2 tag, the runner tag
+    # check and all mask offsets assume "\n". Output is always LF (see
+    # .gitattributes); behavior on LF inputs is byte-identical to before.
+    code = code.replace("\r\n", "\n").replace("\r", "\n")
     if args.audit:
         # Audit the RAW input (line numbers match the file you review).
         from audit import report as audit_report
@@ -90,7 +94,7 @@ def main():
             print("pack rejected in host mode (output must stay installable .js)")
             return 1
     if args.embed:
-        raw_snippet = Path(args.embed).read_text(encoding="utf-8")
+        raw_snippet = Path(args.embed).read_text(encoding="utf-8").replace("\r\n", "\n").replace("\r", "\n")
         if len(raw_snippet.encode("utf-8")) > args.embed_max:
             print(f"embed source too large ({len(raw_snippet.encode('utf-8'))} bytes > {args.embed_max} cap), aborting")
             return 1
@@ -138,7 +142,7 @@ def main():
             print(f"pass {name!r} failed: {e}, aborting (no output written)")
             return 1
         print(f"pass applied: {name} ({len(code)} chars)")
-    Path(args.dst).write_text(header + code, encoding="utf-8")
+    Path(args.dst).write_text(header + code, encoding="utf-8", newline="\n")
     print(f"wrote {args.dst}")
     return 0
 

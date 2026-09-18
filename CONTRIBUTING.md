@@ -12,8 +12,8 @@
 - **Minimalism:** no decoys, no fake content, no dead code, no comments in
   shipped code beyond one-line contracts.
 - **English only** in code, comments, commits, issues.
-- **Bump `VERSION`** on every behavior change; README + CHANGELOG ride with
-  the bump (`tools/check.py` enforces this).
+- **Bump `VERSION`** on every behavior change; README + CHANGELOG +
+  `pyproject.toml` ride with the bump (`tools/check.py` enforces this).
 - **Whole battery green:** `bash tests/selftest.sh` must print
   `SELFTEST GREEN` before any push.
 
