@@ -1,4 +1,4 @@
-# PASSES — per-pass contracts (edit code freely, keep these true)
+# PASSES — per-pass contracts (hardened v2.13.0)
 
 All passes: `run(code: str) -> str`. Pure (no I/O), never crash on valid JS,
 never change runtime behavior — only representation. Order:
@@ -7,7 +7,8 @@ never change runtime behavior — only representation. Order:
 Shared machinery: `src/scan.py` (tokenizer + mask — the ONLY scanner anyone
 may use), `src/poison.py` (never-rename names, short only),
 `src/seed.py` (build variance from FORGE_SEED — the ONLY seed source;
-also `FORGE_KEEP`: comma-separated reserved string values uni/crypt skip).
+also `FORGE_KEEP`: comma-separated reserved string values uni/crypt skip,
+and `FORGE_SIGN_KEY`: HMAC-SHA256 signing key for pack).
 
 ## num — decimal ints to hex
 Token-based: only matches inside `other` tokens, so strings/regex/comments/
@@ -49,6 +50,8 @@ methods literally named if/while are kept). Fixpoint, max 5 rounds.
   `export` binding, or in GLOBALS/RESERVED/poisoned sets. Cross-file contract
   names (`ForgeScript`) are GLOBALS. `export` names stay verbatim so
   importers keep working (forge still targets bundles; `--audit` flags them).
+- Import specifiers (from poison.py) are protected: module paths are never
+  renamed or encrypted.
 - Number-adjacent letters are numeric suffixes (`123n`, `1e5`), never idents.
 - Regex/division disambiguated with pending-buffer lookbehind.
 - With FORGE_SEED set, assignment order shuffles (same input, different
@@ -63,22 +66,28 @@ methods literally named if/while are kept). Fixpoint, max 5 rounds.
   Same value on the wire, no readable words on disk. Live `${}` strings are
   escaped; template TEXT middles stay verbatim.
 - Same skip-set as crypt: template middles, `__*` markers, directives,
-  object-key position, non-ASCII values.
+  object-key position, non-ASCII values, import specifiers.
 
 ## crypt — encrypt long string literals into a shuffled table
 - Only real `'...'`/`"..."` tokens, length ≥ 12, ASCII-only. Live `${}`
   strings are encrypted; template TEXT middles between `}` and `${` stay
   verbatim (a call there would be a syntax error). Skips `__*` markers,
-  directives, object-key position, short strings.
-- Output is ONE hex table + index-call decoder (`var __t=[..];var
-  __f=function(i){..};` + `__f(3)+__f(0)` chains) after a directive prologue.
-- Table order shuffles per FORGE_SEED (default: encounter order, diffable).
-  Stub/table names, XOR key, chunk length and hex case derive from the seed
-  (defaults: `__t`/`__f`, `0x5A`, 16, lowercase). The stub embeds its own key
-  literal, so old `.fs` files keep running and seeded files never mix keys.
-- Refuses sources already using the stub/table names (loud abort).
+  directives, object-key position, import specifiers.
+- Output shape: ONE hex table + index-call decoder appended after a directive
+  prologue (strict kept). Table entry order shuffles per FORGE_SEED (default:
+  encounter order, diffable). Stub/table names, XOR key, chunk length and hex
+  case all derive from the seed (defaults: __t/__f, 0x5A, 16, lowercase).
+  Each file's stub carries its own key literal, so old .fs files keep running
+  and seeded files never mix keys. A source already using the stub/table
+  names aborts loudly.
 
-## pack — emit FS:2 (ALWAYS LAST)
-- Splits UTF-8 bytes in thirds, per-exec-index XOR keys, deterministic
-  FNV-seeded shuffle, FNV signature over ciphertext. Refuses empty/tiny input.
-- Idempotent: repacking FS:2 returns it unchanged. See FORMAT.md.
+## pack — emit the .fs data file (ALWAYS LAST)
+- Salt: manifest carries "k" (8 hex chars) and "alg" ("hmac" or "fnv").
+- Default salt = fnv(input) (diffable builds); FORGE_SEED=N overrides.
+- Old files without "k" stay valid (runner falls back to legacy schedule).
+- **Hardened**: If `FORGE_SIGN_KEY` is set, manifest uses `alg: "hmac"` and
+  the signature is HMAC-SHA256 (first 16 hex chars). Runner verifies HMAC
+  before decoding. Without the key, `alg: "fnv"` and FNV-1a is used
+  (accident-check only, see LIMITS.md).
+- Always 3 segments, split by UTF-8 byte thirds.
+- Idempotent: repacking an FS:2 file returns it unchanged.

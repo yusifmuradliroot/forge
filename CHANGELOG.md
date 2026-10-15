@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.13.0] — hardened release (security + signing + strict mode)
+- `FORGE_SIGN_KEY` enables HMAC-SHA256 signatures (`alg: "hmac"` in manifest)
+- `--strict` mode refuses builds with eval/with/export/sinks/risky constructs
+- `FORGE_DEBUG=1` shows runner rejection reasons
+- Aggressive memory cleanup in runner (c="", t="", globalThis.gc())
+- Import specifiers protected from renaming/encryption (poison.py)
+- Runner v5 with anti-debug gate and signature verification
+- Version bumped to 2.13.0 across VERSION, pyproject.toml, README.md
+
 ## [Unreleased]
 - License: MIT -> FORGE CUSTOM LICENSE (inspect, customize and use freely,
   with mandatory attribution; the attributed part must be removed on the
